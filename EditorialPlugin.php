@@ -68,8 +68,15 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
     {
         $page = $args['page'];
         $user = current_user();
+        $db = get_db();
+        
         $restrictedBlockIds = $this->restrictedBlockIds($page);
-        //$select->where("exhibit_page_blocks.id NOT IN ($restrictedBlockIds)");
+        $select->join("{$db->EditorialBlockRestriction}",
+                      "exhibit_page_blocks.id = {$db->EditorialBlockRestriction}.block_id",
+                      array()
+                );
+        $select->where("{$db->EditorialBlockRestriction}.allowed_user_id = ? ", $user->id);
+        $select->orWhere("{$db->EditorialBlockRestriction}.owner_id = ? ", $user->id);
         return $select;
     }
 
@@ -77,21 +84,15 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
     {
         $db = get_db();
         $user = current_user();
-        
-        /*
-        $table = $db->getTable('EditorialBlockRestriction');
-        $restrictionSelect = $table->getSelect();
-        $restrictionSelect->where("allowed_user_id != ?", $user->id);
-        $restrictedBlocks = $table->fetchObjects($restrictionSelect);
-        */
-        
+
         $restrictedBlocks = $db->getTable('EditorialBlockRestriction')
                                         ->findBy(array('page_id'=>$page->id));
-        
+
         $restrictedBlockIds = "";
         foreach ($restrictedBlocks as $restrictedBlock) {
             if ($user) {
-                if($restrictedBlock->allowed_user_id != $user->id) {
+                
+                if ( ! ( ($restrictedBlock->allowed_user_id == $user->id) && ($restrictedBlock->owner_id == $user->id) ) ) {
                     $restrictedBlockIds .= $restrictedBlock->block_id .= ',';
                 }
             } else {
