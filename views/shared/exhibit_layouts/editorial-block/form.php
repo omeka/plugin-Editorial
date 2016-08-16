@@ -10,8 +10,11 @@ $usersForSelect = get_table_options('User');
 </div>
 
 
-<div class='options'>
-    <h4><?php echo __('Options'); ?></h4>
+<div class='layout-options'>
+    <div class="block-header">
+        <h4><?php echo __('Options'); ?></h4>
+        <div class="drawer"></div>
+    </div>
     <div class='users-select'>
         
         <?php echo $this->formLabel($formStem . '[options][users]', __('Allowed Users')); ?>
