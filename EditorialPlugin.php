@@ -76,7 +76,6 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
                       array()
                 );
         $select->where("{$db->EditorialBlockRestriction}.allowed_user_id = ? ", $user->id);
-        $select->orWhere("{$db->EditorialBlockRestriction}.owner_id = ? ", $user->id);
         return $select;
     }
 
