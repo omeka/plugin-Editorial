@@ -52,6 +52,10 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
                 $restriction->save();
             }
         }
+        
+        if ($options['send-emails']) {
+            $this->sendEmails($block);
+        }
 
     }
     
@@ -70,7 +74,6 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $user = current_user();
         $db = get_db();
         
-        $restrictedBlockIds = $this->restrictedBlockIds($page);
         $select->join("{$db->EditorialBlockRestriction}",
                       "exhibit_page_blocks.id = {$db->EditorialBlockRestriction}.block_id",
                       array()
@@ -78,26 +81,37 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $select->where("{$db->EditorialBlockRestriction}.allowed_user_id = ? ", $user->id);
         return $select;
     }
-
-    protected function restrictedBlockIds($page)
+    
+    protected function sendEmails($block)
     {
-        $db = get_db();
-        $user = current_user();
+        $db = $this->_db;
+        $restrictionTable = $db->getTable('EditorialBlockRestriction');
+        $userTable = $db->getTable('User');
 
-        $restrictedBlocks = $db->getTable('EditorialBlockRestriction')
-                                        ->findBy(array('page_id'=>$page->id));
-
-        $restrictedBlockIds = "";
-        foreach ($restrictedBlocks as $restrictedBlock) {
-            if ($user) {
-                
-                if ( ! ( ($restrictedBlock->allowed_user_id == $user->id) && ($restrictedBlock->owner_id == $user->id) ) ) {
-                    $restrictedBlockIds .= $restrictedBlock->block_id .= ',';
-                }
-            } else {
-                $restrictedBlockIds .= $restrictedBlock->block_id .= ',';
-            }
+        $userSelect = $userTable->getSelect();
+        $userSelect->join("{$db->EditorialBlockRestriction}",
+                          "users.id = {$db->EditorialBlockRestriction}.allowed_user_id",
+                          array()
+        );
+        $userSelect->where("{$db->EditorialBlockRestriction}.block_id = ?", $block->id);
+        $users = $userTable->fetchObjects($userSelect);
+        $userEmails = array();
+        foreach($users as $user) {
+            $userEmails[] = $user->email;
         }
-        return trim($restrictedBlockIds, ',');
+        
+        $mail = new Zend_Mail('UTF-8');
+        $mail->addHeader('X-Mailer', 'PHP/' . phpversion());
+        $mail->setFrom(get_option('administrator_email'), get_option('site_title'));
+        $mail->addTo($userEmails);
+        $subject = __("New content to review at %s ", "<a href='" . WEB_ROOT  . "'></a>" );
+        $body = "";
+        $mail->setSubject($subject);
+        $mail->setBodyHtml($body);
+        try {
+            $mail->send();
+        } catch(Exception $e) {
+            _log($e);
+        }
     }
 }

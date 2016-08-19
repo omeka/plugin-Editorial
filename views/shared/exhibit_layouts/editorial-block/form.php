@@ -15,6 +15,13 @@ $usersForSelect = get_table_options('User');
         <h4><?php echo __('Options'); ?></h4>
         <div class="drawer"></div>
     </div>
+    
+    <div class='send-emails'>
+        <?php
+            echo $this->formLabel($formStem . '[options][send-emails]', __('Send Emails') );
+            echo $this->formCheckbox($formStem . '[options][send-emails]');
+        ?>
+    </div>
     <div class='users-select'>
         
         <?php echo $this->formLabel($formStem . '[options][users]', __('Allowed Users')); ?>
