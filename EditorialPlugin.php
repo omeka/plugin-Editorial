@@ -101,11 +101,14 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $mail->setFrom(get_option('administrator_email'), get_option('site_title'));
         $mail->addTo($userEmails);
         $subject = __("New content to review at %s ", "<a href='" . WEB_ROOT  . "'></a>" );
-        $body = "";
+        
+        $body = snippet($block->text, 0, 250);
+        
+        $body .= "<p>" . __("View the page at ") . record_url($block->getPage(), 'edit', true) . "</p>";
         $mail->setSubject($subject);
         $mail->setBodyHtml($body);
         try {
-            $mail->send();
+            //$mail->send();
         } catch(Exception $e) {
             _log($e);
         }
