@@ -32,10 +32,6 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             if (! in_array($restrictionRecord->allowed_user_id, $allowedUsers)) {
                 $restrictionRecord->delete();
             }
-            
-            //if () check if the record exists, by block id and allowed user id
-            
-            //else, create a new record. that's what the count below does
         }
         
         foreach($allowedUsers as $userId) {
