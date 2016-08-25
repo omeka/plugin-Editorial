@@ -26,7 +26,19 @@ if (   $currentUser->role == 'admin'
 
 <div class="block-text">
     <h4><?php echo __('Comment'); ?></h4>
-    <?php echo $this->exhibitFormText($block); ?>
+    
+    <?php 
+        if ($changeAllowed) {
+             echo $this->exhibitFormText($block); 
+        } else {
+            $html = "<div>";
+            $html .= $block->text;
+            $html .= "</div>";
+            echo $html;
+        }
+    
+    ?>
+    
     <?php if ($block->exists()): ?>
     <?php $responses = get_db()->getTable('EditorialBlockResponse')->findBy(array('block_id' => $block->id)); ?>
     <div class='editorial-block-responses'>
@@ -38,7 +50,11 @@ if (   $currentUser->role == 'admin'
         <div class='editorial-block-response new' style='margin-left: 25px; '>
             <?php 
                 echo $this->formLabel($formStem . '[options][response]', 'Leave new response');
-                echo $this->formTextarea($formStem . '[options][response]');
+                echo $this->formTextarea(
+                        $formStem . '[options][response]',
+                        '',
+                        array('rows' => 7)
+                    );
             ?>
         </div>
     </div>
