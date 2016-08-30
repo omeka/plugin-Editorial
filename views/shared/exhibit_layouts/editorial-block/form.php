@@ -7,27 +7,26 @@ $currentUser = current_user();
 unset ($usersForSelect[$currentUser->id]);
 
 // allow some users to change who's allowed access
-// this could/should be done by a fancy ACL class thing,
-// but it's quicker and cheaper this way. I'm ok with this technical debt for now
-// see #7
 
 $changeAllowed = false;
 
 if (   $currentUser->role == 'admin'
     || $currentUser->role == 'super'
-    || $currentUser->id == $block->owner_id
+    || $currentUser->id == $options['owner_id']
    ) {
-    
     $changeAllowed = true;
 }
 
 
 ?>
-
-<div class="block-text">
+<?php if (EditorialPlugin::userHasAccess($block)) :?>
+<div class="block-text editorial">
+<?php else: ?>
+<div class="block-text editorial no-access">
+<?php endif; ?>
     <h4><?php echo __('Comment'); ?></h4>
     
-    <?php 
+    <?php
         if ($changeAllowed) {
              echo $this->exhibitFormText($block); 
         } else {
@@ -40,18 +39,30 @@ if (   $currentUser->role == 'admin'
     ?>
     
     <?php if ($block->exists()): ?>
-    <?php $responses = get_db()->getTable('EditorialBlockResponse')->findBy(array('block_id' => $block->id)); ?>
+    <?php $responses = get_db()->getTable('EditorialBlockResponse')->findResponsesForBlock($block); ?>
+    
+    <?php
+        // block options are all reset from the data in the form,
+        // so spoof in the existing response_ids data
+        foreach ($options['response_ids'] as $responseId):
+    ?>
+    <input type='hidden' name='<?php echo $formStem . "[options][response_ids][]"; ?>' value='<?php echo $responseId; ?>' />
+    
+    <?php endforeach; ?>
+    
     <div class='editorial-block-responses'>
         <?php foreach ($responses as $response): ?>
-        <div>
-        
+        <div class='editorial-block-response'>
+        <?php echo $response->text; ?>
         </div>
         <?php endforeach; ?>
+
         <div class='editorial-block-response new' style='margin-left: 25px; '>
-            <?php 
-                echo $this->formLabel($formStem . '[options][response]', 'Leave new response');
+            <?php
+
+                echo $this->formLabel($formStem . "[options][responses][]", 'Leave new response');
                 echo $this->formTextarea(
-                        $formStem . '[options][response]',
+                        $formStem . "[options][responses][]",
                         '',
                         array('rows' => 7)
                     );
@@ -59,7 +70,6 @@ if (   $currentUser->role == 'admin'
         </div>
     </div>
 
-    
     <?php endif; ?>
 </div>
 
@@ -82,8 +92,9 @@ if (   $currentUser->role == 'admin'
                 $selectAttrs['disabled'] = 'disabled';
             }
         ?>
-        <?php echo $this->formLabel($formStem . '[options][users]', __('Allowed Users')); ?>
-        <?php echo $this->formSelect($formStem . '[options][users]',
+        <input type ='hidden' name='<?php echo $formStem . "[options][owner_id]"; ?>' value='<?php echo $currentUser->id; ?>' />
+        <?php echo $this->formLabel($formStem . '[options][allowed_users]', __('Allowed Users')); ?>
+        <?php echo $this->formSelect($formStem . '[options][allowed_users]',
                                      @$options['users'],
                                      $selectAttrs,
                                      $usersForSelect
