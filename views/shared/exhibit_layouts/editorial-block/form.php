@@ -54,11 +54,17 @@ if ($block->exists()
     <div class='editorial-block-responses'>
         <?php foreach ($responses as $response): ?>
         <div class='editorial-block-response'>
-        <?php echo $response->text; ?>
+        <?php if ($currentUser->id == $response->owner_id) {
+                  echo $this->formTextarea($block->getFormStem() . "[options][edited_responses][{$response->id}]",
+                        $response->text, array('rows' => 8));
+              } else {
+                  echo $response->text;
+              }
+        ?>
         </div>
         <?php endforeach; ?>
 
-        <div class='editorial-block-response new' style='margin-left: 25px; '>
+        <div class='editorial-block-response-new'>
             <?php
 
                 echo $this->formLabel($formStem . "[options][responses][]", 'Leave new response');

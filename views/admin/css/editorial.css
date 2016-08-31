@@ -1,0 +1,12 @@
+
+.editorial-block-response {
+    min-height: 100px;
+    background-color: white;
+    width: 70%;
+    border: 1px solid grey;
+    margin: 5px;
+}
+
+.editorial-block-response-new {
+    margin-left: 25px;
+}

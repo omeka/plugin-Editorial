@@ -21,11 +21,9 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
     
     public function hookDefineAcl($args)
     {
-        debug('acling');
         $acl = $args['acl'];
         $acl->addRole('exhibit-contributor', 'contributor');
         $acl->allow('exhibit-contributor', 'ExhibitBuilder_Exhibits', array('edit'));
-        
     }
     
     public function hookBeforeSaveExhibitPageBlock($args)
@@ -54,8 +52,16 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
     public function hookAfterSaveExhibitPageBlock($args)
     {
         $block = $args['record'];
+        $responseTable = $this->_db->getTable('EditorialBlockResponse');
+        $options = $block->getOptions();
         if ($block->layout !== 'editorial-block') {
             return;
+        }
+        
+        foreach ($options['edited_responses'] as $responseId => $responseData) {
+            $response = $responseTable->find($responseId);
+            $response->text = $responseData;
+            $response->save();
         }
 
         if ($options['send-emails']) {
