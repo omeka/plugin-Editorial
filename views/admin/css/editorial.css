@@ -1,12 +1,21 @@
 
-.editorial-block-response {
-    min-height: 100px;
+.editorial-block-response-container {
+    min-height: 150px;
     background-color: white;
-    width: 70%;
     border: 1px solid grey;
     margin: 5px;
+}
+
+.editorial-block-response {
+}
+
+.editorial-block-response-info {
+    float: left;
+    width: 100px;
+    margin: 3px;
 }
 
 .editorial-block-response-new {
     margin-left: 25px;
 }
+

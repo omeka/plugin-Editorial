@@ -53,14 +53,25 @@ if ($block->exists()
     
     <div class='editorial-block-responses'>
         <?php foreach ($responses as $response): ?>
-        <div class='editorial-block-response'>
-        <?php if ($currentUser->id == $response->owner_id) {
-                  echo $this->formTextarea($block->getFormStem() . "[options][edited_responses][{$response->id}]",
-                        $response->text, array('rows' => 8));
-              } else {
-                  echo $response->text;
-              }
-        ?>
+        <div class='editorial-block-response-container'>
+            <div class='editorial-block-response-info'>
+            <?php
+                $owner = $response->getOwner();
+                $hash = md5(strtolower(trim($owner->email)));
+                $url = "//www.gravatar.com/avatar/$hash";
+            ?>
+                <img class='gravatar' src='<?php echo $url; ?>' />
+                <div><?php echo $owner->username; ?></div>
+            </div>
+            <div class='editorial-block-response'>
+            <?php if ($currentUser->id == $response->owner_id) {
+                      echo $this->formTextarea($block->getFormStem() . "[options][edited_responses][{$response->id}]",
+                            $response->text, array('rows' => 8));
+                  } else {
+                      echo $response->text;
+                  }
+            ?>
+            </div>
         </div>
         <?php endforeach; ?>
 
