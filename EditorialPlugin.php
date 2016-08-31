@@ -4,55 +4,63 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
 {
     protected $_hooks = array(
             'after_save_exhibit_page_block',
+            'before_save_exhibit_page_block',
+            'admin_head',
+            'define_acl',
             );
     
     protected $_filters = array(
-                    'exhibit_page_blocks_sql',
-                    'exhibit_layouts'
+                'exhibit_layouts'
             );
     
-    public function hookAfterSaveExhibitPageBlock($args)
+    public function hookAdminHead()
+    {
+        queue_css_file('editorial');
+        queue_js_file('editorial');
+    }
+    
+    public function hookDefineAcl($args)
+    {
+        debug('acling');
+        $acl = $args['acl'];
+        $acl->addRole('exhibit-contributor', 'contributor');
+        $acl->allow('exhibit-contributor', 'ExhibitBuilder_Exhibits', array('edit'));
+        
+    }
+    
+    public function hookBeforeSaveExhibitPageBlock($args)
     {
         $block = $args['record'];
         if ($block->layout !== 'editorial-block') {
             return;
         }
         $owner = current_user();
-        
-        $options = $block->getOptions();
-        $allowedUsers = $options['users'];
-        $allowedUsers[] = $owner->id;
-        
-        $restrictionTable = $this->_db->getTable('EditorialBlockRestriction');
-        $restrictionRecords = $restrictionTable->findBy(array(
-                                            'block_id' => $block->id,
-                                            'owner_id' => $owner->id));
 
-        foreach($restrictionRecords as $restrictionRecord) {
-            if (! in_array($restrictionRecord->allowed_user_id, $allowedUsers)) {
-                $restrictionRecord->delete();
+        $options = $block->getOptions();
+        $responseIds = empty($options['response_ids']) ?  array() : $options['response_ids'];
+        foreach ($options['responses'] as $responseData) {
+            if (! empty ($responseData)) {
+                $response = new EditorialBlockResponse;
+                $response->text = $responseData;
+                $response->save();
+                $responseIds[] = $response->id;
             }
         }
-        
-        foreach($allowedUsers as $userId) {
-            $count = $restrictionTable->count(array(
-                                        'block_id' => $block->id,
-                                        'allowed_user_id' => $userId,
-                                      ));
-            if ($count == 0) {
-                $restriction = new EditorialBlockRestriction;
-                $restriction->block_id = $block->id;
-                $restriction->page_id = $block->page_id;
-                $restriction->allowed_user_id = $userId;
-                $restriction->owner_id = $owner->id;
-                $restriction->save();
-            }
+        $options['response_ids'] = $responseIds;
+        unset ($options['responses']);
+        $block->setOptions($options);
+    }
+
+    public function hookAfterSaveExhibitPageBlock($args)
+    {
+        $block = $args['record'];
+        if ($block->layout !== 'editorial-block') {
+            return;
         }
-        
+
         if ($options['send-emails']) {
             $this->sendEmails($block);
         }
-
     }
     
     public function filterExhibitLayouts($layouts)
@@ -62,20 +70,6 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
                     'description' => __('Provide commentary on pages being worked on')
                 );
         return $layouts;
-    }
-    
-    public function filterExhibitPageBlocksSql($select, $args)
-    {
-        $page = $args['page'];
-        $user = current_user();
-        $db = get_db();
-        
-        $select->join("{$db->EditorialBlockRestriction}",
-                      "exhibit_page_blocks.id = {$db->EditorialBlockRestriction}.block_id",
-                      array()
-                );
-        $select->where("{$db->EditorialBlockRestriction}.allowed_user_id = ? ", $user->id);
-        return $select;
     }
     
     protected function sendEmails($block)
@@ -112,5 +106,32 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         } catch(Exception $e) {
             _log($e);
         }
+    }
+    
+    static public function userHasAccess($block, $user = null)
+    {
+        if (! $block->exists()) {
+            return true;
+        }
+        if (! $user) {
+            $user = current_user();
+        }
+        if (! $user) {
+            return false;
+        }
+        
+        $options = $block->getOptions();
+        if ($user->id == $options['owner_id'] ) {
+            return true;
+        }
+        
+        if (empty ($options['allowed_users'])) {
+            return false;
+        }
+        
+        if (in_array($user->id, $options['allowed_users'])) {
+            return true;
+        }
+        return false;
     }
 }
