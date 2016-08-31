@@ -10,7 +10,8 @@ unset ($usersForSelect[$currentUser->id]);
 
 $changeAllowed = false;
 
-if (   $currentUser->role == 'admin'
+if ($block->exists()
+    && $currentUser->role == 'admin'
     || $currentUser->role == 'super'
     || $currentUser->id == $options['owner_id']
    ) {

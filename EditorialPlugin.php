@@ -5,11 +5,28 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
     protected $_hooks = array(
             'after_save_exhibit_page_block',
             'before_save_exhibit_page_block',
+            'admin_head',
+            'define_acl',
             );
     
     protected $_filters = array(
                 'exhibit_layouts'
             );
+    
+    public function hookAdminHead()
+    {
+        queue_css_file('editorial');
+        queue_js_file('editorial');
+    }
+    
+    public function hookDefineAcl($args)
+    {
+        debug('acling');
+        $acl = $args['acl'];
+        $acl->addRole('exhibit-contributor', 'contributor');
+        $acl->allow('exhibit-contributor', 'ExhibitBuilder_Exhibits', array('edit'));
+        
+    }
     
     public function hookBeforeSaveExhibitPageBlock($args)
     {
@@ -93,6 +110,9 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
     
     static public function userHasAccess($block, $user = null)
     {
+        if (! $block->exists()) {
+            return true;
+        }
         if (! $user) {
             $user = current_user();
         }
@@ -103,6 +123,10 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $options = $block->getOptions();
         if ($user->id == $options['owner_id'] ) {
             return true;
+        }
+        
+        if (empty ($options['allowed_users'])) {
+            return false;
         }
         
         if (in_array($user->id, $options['allowed_users'])) {
