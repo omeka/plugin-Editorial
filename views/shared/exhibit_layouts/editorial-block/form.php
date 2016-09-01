@@ -52,16 +52,25 @@ if ($block->exists()
     <?php endforeach; ?>
     
     <div class='editorial-block-responses'>
+        <h5>Conversation</h5>
         <?php foreach ($responses as $response): ?>
+
         <div class='editorial-block-response-container'>
-            <div class='editorial-block-response-info'>
-            <?php
-                $owner = $response->getOwner();
-                $hash = md5(strtolower(trim($owner->email)));
-                $url = "//www.gravatar.com/avatar/$hash";
-            ?>
-                <img class='gravatar' src='<?php echo $url; ?>' />
-                <div><?php echo $owner->username; ?></div>
+            <div>
+                <div class="drawer closed" role="button" title="<?php echo __('Expand/Collapse'); ?>"></div>
+
+                <div class='editorial-block-response-info'>
+                <?php
+                    $owner = $response->getOwner();
+                    $hash = md5(strtolower(trim($owner->email)));
+                    $url = "//www.gravatar.com/avatar/$hash";
+                ?>
+                    <img class='gravatar' src='<?php echo $url; ?>' />
+                    <div><?php echo $owner->username; ?></div>
+                </div>
+                <div>
+                    <?php echo snippet($response->text, 0, 100); ?>
+                </div>
             </div>
             <div class='editorial-block-response'>
             <?php if ($currentUser->id == $response->owner_id) {
@@ -112,7 +121,7 @@ if ($block->exists()
         <input type ='hidden' name='<?php echo $formStem . "[options][owner_id]"; ?>' value='<?php echo $currentUser->id; ?>' />
         <?php echo $this->formLabel($formStem . '[options][allowed_users]', __('Allowed Users')); ?>
         <?php echo $this->formSelect($formStem . '[options][allowed_users]',
-                                     @$options['users'],
+                                     @$options['allowed_users'],
                                      $selectAttrs,
                                      $usersForSelect
                 ); ?>
