@@ -36,3 +36,8 @@
 .editorial-block.reply-button {
     cursor: pointer;
 }
+
+.editorial-block-response.child-text {
+    display: inline-block;
+    float: right;
+}

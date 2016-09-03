@@ -15,7 +15,7 @@
         });
         
         $('.editorial-block.reply-button').click(function() {
-            //$(this).siblings('.reply').toggle();
+            $(this).siblings('.reply').toggle();
         });
     });
 })(jQuery);
