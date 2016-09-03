@@ -4,24 +4,30 @@ $options = $block->getOptions();
 $usersForSelect = get_table_options('User');
 $currentUser = current_user();
 
-unset ($usersForSelect[$currentUser->id]);
+
+//unset ($usersForSelect[$currentUser->id]);
+unset ($usersForSelect['']);
 
 // allow some users to change who's allowed access
 
 $changeAllowed = false;
 
-if ($block->exists()
-    && $currentUser->role == 'admin'
-    || $currentUser->role == 'super'
-    || $currentUser->id == $options['owner_id']
-   ) {
+if ($block->exists()) {
+    $ownerRecord = get_db()->getTable('EditorialBlockOwner')->findByBlock($block);
+    if (   $currentUser->role == 'admin'
+        || $currentUser->role == 'super'
+        || $currentUser->id == $ownerRecord->user_id
+    ) {
+        $changeAllowed = true;
+    }
+} else {
     $changeAllowed = true;
 }
 
 
 ?>
 <?php if (EditorialPlugin::userHasAccess($block)) :?>
-<div class="block-text editorial">
+<div class="block-text editorial <?php echo $changeAllowed ? 'change-allowed' : 'no-edit'; ?>">
 <?php else: ?>
 <div class="block-text editorial no-access">
 <?php endif; ?>
@@ -33,6 +39,7 @@ if ($block->exists()
         } else {
             $html = "<div>";
             $html .= $block->text;
+            $html .= "<input type='hidden' name='{$formStem}[text]' value='{$block->text}' />";
             $html .= "</div>";
             echo $html;
         }
@@ -40,8 +47,18 @@ if ($block->exists()
     ?>
     
     <?php if ($block->exists()): ?>
-    <?php $responses = get_db()->getTable('EditorialBlockResponse')->findResponsesForBlock($block); ?>
-    
+    <?php $topLevelResponses = get_db()->getTable('EditorialBlockResponse')->findResponsesForBlock($block); ?>
+        <div class='editorial-block-response-new'>
+            <?php
+
+                echo $this->formLabel($formStem . "[options][responses][]", 'Leave new response');
+                echo $this->formTextarea(
+                        $formStem . "[options][responses][]",
+                        '',
+                        array('rows' => 7)
+                    );
+            ?>
+        </div>
     <?php
         // block options are all reset from the data in the form,
         // so spoof in the existing response_ids data
@@ -53,7 +70,7 @@ if ($block->exists()
     
     <div class='editorial-block-responses'>
         <h5>Conversation</h5>
-        <?php foreach ($responses as $response): ?>
+        <?php foreach ($topLevelResponses as $response): ?>
 
         <div class='editorial-block-response-container'>
             <div>
@@ -80,21 +97,29 @@ if ($block->exists()
                       echo $response->text;
                   }
             ?>
+                <?php $childResponses = $response->getChildResponses();
+                    foreach ($childResponses as $childResponse) :
+                ?>
+                <div class='editorial-block-response child'>
+                <?php echo $childResponse->text; ?>
+                </div>
+                <?php endforeach; ?>
+            
+                <div>
+                    <p class='editorial-block reply-button'>Reply</p>
+                    <div class='editorial-block reply'>
+                    <?php
+                    echo $this->formTextarea($block->getFormStem() . "[options][child_responses][{$response->id}]",
+                            '', array('rows' => 8));
+                    ?>
+                    </div>
+                </div>
             </div>
+
         </div>
         <?php endforeach; ?>
 
-        <div class='editorial-block-response-new'>
-            <?php
 
-                echo $this->formLabel($formStem . "[options][responses][]", 'Leave new response');
-                echo $this->formTextarea(
-                        $formStem . "[options][responses][]",
-                        '',
-                        array('rows' => 7)
-                    );
-            ?>
-        </div>
     </div>
     <?php endif; ?>
 </div>
@@ -107,23 +132,28 @@ if ($block->exists()
     
     <div class='send-emails'>
         <?php
-            echo $this->formLabel($formStem . '[options][send-emails]', __('Send Emails') );
+            echo $this->formLabel($formStem . '[options][send-emails]', __('Send Email Notifications') );
             echo $this->formCheckbox($formStem . '[options][send-emails]');
         ?>
     </div>
     <div class='users-select'>
         <?php 
-            $selectAttrs = array('multiple' => true, 'size' => 10);
-            if (!$changeAllowed) {
-                $selectAttrs['disabled'] = 'disabled';
-            }
-        ?>
-        <input type ='hidden' name='<?php echo $formStem . "[options][owner_id]"; ?>' value='<?php echo $currentUser->id; ?>' />
-        <?php echo $this->formLabel($formStem . '[options][allowed_users]', __('Allowed Users')); ?>
-        <?php echo $this->formSelect($formStem . '[options][allowed_users]',
+            if ($changeAllowed) {
+                $selectAttrs = array('multiple' => true, 'size' => 10);
+                echo $this->formLabel($formStem . '[options][allowed_users]', __('Other Users With Access'));
+                echo $this->formSelect($formStem . '[options][allowed_users]',
                                      @$options['allowed_users'],
                                      $selectAttrs,
                                      $usersForSelect
-                ); ?>
+                );
+            } else {
+                foreach ($options['allowed_users'] as $allowedUserId) {
+                    echo "<input type='hidden' name='{$formStem}[options][allowed_users][]' value='$allowedUserId' />";
+                }
+            }
+        ?>
+
     </div>
 </div>
+<?php 
+?>

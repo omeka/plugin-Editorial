@@ -12,6 +12,13 @@
     clear: left;
 }
 
+.editorial-block-response.child {
+    display:block;
+    margin: 5px 0 0 10px;
+    padding: 5px;
+    border: 1px solid grey;
+}
+
 .editorial-block-response-info {
     float: left;
     width: 100px;
@@ -20,4 +27,12 @@
 
 .editorial-block-response-new {
     margin-left: 25px;
+}
+
+.editorial-block.reply {
+    display: none;
+}
+
+.editorial-block.reply-button {
+    cursor: pointer;
 }

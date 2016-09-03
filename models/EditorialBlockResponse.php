@@ -20,4 +20,9 @@ class EditorialBlockResponse extends Omeka_Record_AbstractRecord
     {
         return $this->getTable('User')->find($this->owner_id);
     }
+    
+    public function getChildResponses()
+    {
+        return $this->getTable('EditorialBlockResponse')->findBy(array('parent_id' => $this->id));
+    }
 }
