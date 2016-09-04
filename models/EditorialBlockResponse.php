@@ -23,6 +23,14 @@ class EditorialBlockResponse extends Omeka_Record_AbstractRecord
     
     public function getChildResponses()
     {
-        return $this->getTable('EditorialBlockResponse')->findBy(array('parent_id' => $this->id));
+        return $this->getTable()->findBy(array('parent_id' => $this->id));
+    }
+    
+    protected function afterDelete()
+    {
+        $children = $this->getChildResponses();
+        foreach ($children as $child) {
+            $child->delete();
+        }
     }
 }

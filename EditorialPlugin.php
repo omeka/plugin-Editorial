@@ -6,6 +6,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             'install',
             'after_save_exhibit_page_block',
             'before_save_exhibit_page_block',
+            'after_delete_exhibit_page_block',
             'admin_head',
             'define_acl',
             );
@@ -53,10 +54,23 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $acl->allow('exhibit-contributor', 'ExhibitBuilder_Exhibits', array('edit'));
     }
     
+    public function hookAfterDeleteExhibitPageBlock($args)
+    {
+        $block = $args['record'];
+        $options = $block->getOptions();
+        $responseTable = $this->_db->getTable('EditorialBlockResponse');
+        $responses = $responseTable->findResponsesForBlock($block);
+        foreach ($responses as $response) {
+            $response->delete();
+        }
+        
+        $ownerRecord = $this->_db->getTable('EditorialBlockOwner')->findByBlock($block);
+        $ownerRecord->delete();
+    }
+    
     public function hookBeforeSaveExhibitPageBlock($args)
     {
         $block = $args['record'];
-        
         
         if ($block->layout !== 'editorial-block') {
             return;
