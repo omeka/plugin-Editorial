@@ -53,19 +53,6 @@ if ($block->exists()) {
     </div>
     <?php endif; ?>
     
-    <?php
-        if ($changeAllowed) {
-             echo $this->exhibitFormText($block);
-        } else {
-            $html = "<div>";
-            $html .= $block->text;
-            $html .= "<input type='hidden' name='{$formStem}[text]' value='{$block->text}' />";
-            $html .= "</div>";
-            echo $html;
-        }
-    
-    ?>
-    
     <?php if ($block->exists()): ?>
     <?php $topLevelResponses = get_db()->getTable('EditorialBlockResponse')->findResponsesForBlock($block); ?>
         <div class='editorial-block-response-new'>
