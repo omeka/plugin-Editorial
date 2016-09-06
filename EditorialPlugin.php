@@ -8,6 +8,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             'before_save_exhibit_page_block',
             'after_delete_exhibit_page_block',
             'admin_head',
+            'public_head',
             'define_acl',
             );
     
@@ -41,6 +42,10 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $db->query($sql);
     }
     
+    public function hookPublicHead()
+    {
+        queue_css_file('editorial');
+    }
     public function hookAdminHead()
     {
         queue_css_file('editorial');
@@ -199,7 +204,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $options = $block->getOptions();
         $ownerRecord = get_db()->getTable('EditorialBlockOwner')->findByBlock($block);
         
-        if ($user->id == $ownerRecord->user_id) {
+        if ($user->id == $ownerRecord->owner_id) {
             return true;
         }
         

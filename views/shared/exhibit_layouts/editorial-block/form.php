@@ -33,9 +33,29 @@ if ($block->exists()) {
 <?php endif; ?>
     <h4><?php echo __('Comment'); ?></h4>
     
+    
+    <div class='editorial-block-response-info'>
+    <?php
+        $ownerRecord = get_db()->getTable('EditorialBlockOwner')->findByBlock($block);
+        $owner = $ownerRecord->getOwner();
+        $hash = md5(strtolower(trim($owner->email)));
+        $url = "//www.gravatar.com/avatar/$hash";
+    ?>
+        <img class='gravatar' src='<?php echo $url; ?>' />
+        <div><?php echo $owner->username; ?></div>
+    </div>
+    <?php if ($changeAllowed): ?>
+    <?php echo $this->exhibitFormText($block); ?>
+    <?php else: ?>
+    <div>
+    <?php echo $block->text; ?>
+    <input type='hidden' name='<?php echo $formStem; ?>[text]' value='<?php echo $block->text; ?>' />
+    </div>
+    <?php endif; ?>
+    
     <?php
         if ($changeAllowed) {
-             echo $this->exhibitFormText($block); 
+             echo $this->exhibitFormText($block);
         } else {
             $html = "<div>";
             $html .= $block->text;
