@@ -151,16 +151,13 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
     
     protected function sendEmails($block)
     {
+        $options = $block->getOptions();
         $db = $this->_db;
         $restrictionTable = $db->getTable('EditorialBlockRestriction');
         $userTable = $db->getTable('User');
 
         $userSelect = $userTable->getSelect();
-        $userSelect->join("{$db->EditorialBlockRestriction}",
-                          "users.id = {$db->EditorialBlockRestriction}.allowed_user_id",
-                          array()
-        );
-        $userSelect->where("{$db->EditorialBlockRestriction}.block_id = ?", $block->id);
+        $userSelect->where("id IN (?)", $options['email_recipients']);
         $users = $userTable->fetchObjects($userSelect);
         $userEmails = array();
         foreach($users as $user) {
@@ -173,7 +170,11 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $mail->addTo($userEmails);
         $subject = __("New content to review at %s ", "<a href='" . WEB_ROOT  . "'></a>" );
         
-        $body = snippet($block->text, 0, 250);
+        $body = '';
+        
+        $body .= $options['email_text'];
+        
+        $body .= snippet($block->text, 0, 250);
         
         $body .= "<p>" . __("View the page at ") . record_url($block->getPage(), 'edit', true) . "</p>";
         $mail->setSubject($subject);
