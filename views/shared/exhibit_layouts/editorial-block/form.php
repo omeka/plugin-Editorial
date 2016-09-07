@@ -4,8 +4,6 @@ $options = $block->getOptions();
 $usersForSelect = get_table_options('User');
 $currentUser = current_user();
 
-
-//unset ($usersForSelect[$currentUser->id]);
 unset ($usersForSelect['']);
 
 // allow some users to change who's allowed access
@@ -36,8 +34,7 @@ if ($block->exists()) {
     
     <div class='editorial-block-response-info'>
     <?php
-        $ownerRecord = get_db()->getTable('EditorialBlockOwner')->findByBlock($block);
-        $owner = $ownerRecord->getOwner();
+        $owner = get_db()->getTable('EditorialBlockOwner')->findOwnerByBlock($block);
         $hash = md5(strtolower(trim($owner->email)));
         $url = "//www.gravatar.com/avatar/$hash";
     ?>
@@ -149,19 +146,49 @@ if ($block->exists()) {
     </div>
     
     <div class='send-emails'>
+        <div>
         <?php
-            echo $this->formLabel($formStem . '[options][send-emails]', __('Send Email Notifications') );
+            echo $this->formLabel($formStem . '[options][send-emails]', __('Send Email Notifications?') );
             echo $this->formCheckbox($formStem . '[options][send-emails]');
+            ?>
+        </div>
+        <div>
+        <?php
+            $recipientsArray = array();
+            if (isset ($options['allowed_users'])) {
+                foreach ($usersForSelect as $userId => $name) {
+                    if (in_array($userId, $options['allowed_users'])) {
+                        $recipientsArray[$userId] = $name;
+                    }
+                }
+            }
+            echo $this->formLabel($formStem . '[options][email-recipients]', __('Select Recipients'));
+            if (empty ($recipientsArray)) {
+                echo "<p>" . __("All the users you give access to below will receive an email.") . "</p>";
+                echo "<p>" . __("After users have been given access, you can select them here.") . "</p>";
+            } else {
+                echo $this->formSelect($formStem . '[options][email-recipients]',
+                                     array(),
+                                     array('multiple' => true, 'size' => count($recipientsArray)),
+                                     $recipientsArray
+                );
+            }
+            ?>
+        </div>
+        <div>
+        <?php
+            echo $this->formLabel($formStem . '[options][email-text]', __('Optional Additional Email Text'));
+            echo $this->formTextarea($formStem . '[options][email-text]');
         ?>
+        </div>
     </div>
     <div class='users-select'>
         <?php 
             if ($changeAllowed) {
-                $selectAttrs = array('multiple' => true, 'size' => 10);
-                echo $this->formLabel($formStem . '[options][allowed_users]', __('Other Users With Access'));
+                echo $this->formLabel($formStem . '[options][allowed_users]', __('Users With Access'));
                 echo $this->formSelect($formStem . '[options][allowed_users]',
                                      @$options['allowed_users'],
-                                     $selectAttrs,
+                                     array('multiple' => true, 'size' => 10),
                                      $usersForSelect
                 );
             } else {
@@ -173,5 +200,3 @@ if ($block->exists()) {
 
     </div>
 </div>
-<?php 
-?>

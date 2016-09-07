@@ -42,3 +42,7 @@
     display: inline-block;
     float: right;
 }
+
+.send-emails div {
+    margin: 10px;
+}
