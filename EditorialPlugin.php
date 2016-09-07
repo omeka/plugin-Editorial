@@ -135,7 +135,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             $blockOwner->save();
         }
 
-        if ($options['send-emails']) {
+        if ($options['send_emails']) {
             $this->sendEmails($block);
         }
     }

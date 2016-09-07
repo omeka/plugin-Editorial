@@ -148,8 +148,8 @@ if ($block->exists()) {
     <div class='send-emails'>
         <div>
         <?php
-            echo $this->formLabel($formStem . '[options][send-emails]', __('Send Email Notifications?') );
-            echo $this->formCheckbox($formStem . '[options][send-emails]');
+            echo $this->formLabel($formStem . '[options][send_emails]', __('Send Email Notifications?') );
+            echo $this->formCheckbox($formStem . '[options][send_emails]');
             ?>
         </div>
         <div>
@@ -162,12 +162,12 @@ if ($block->exists()) {
                     }
                 }
             }
-            echo $this->formLabel($formStem . '[options][email-recipients]', __('Select Recipients'));
+            echo $this->formLabel($formStem . '[options][email_recipients]', __('Select Recipients'));
             if (empty ($recipientsArray)) {
                 echo "<p>" . __("All the users you give access to below will receive an email.") . "</p>";
                 echo "<p>" . __("After users have been given access, you can select them here.") . "</p>";
             } else {
-                echo $this->formSelect($formStem . '[options][email-recipients]',
+                echo $this->formSelect($formStem . '[options][email_recipients]',
                                      array(),
                                      array('multiple' => true, 'size' => count($recipientsArray)),
                                      $recipientsArray
@@ -177,8 +177,8 @@ if ($block->exists()) {
         </div>
         <div>
         <?php
-            echo $this->formLabel($formStem . '[options][email-text]', __('Optional Additional Email Text'));
-            echo $this->formTextarea($formStem . '[options][email-text]');
+            echo $this->formLabel($formStem . '[options][email_text]', __('Optional Additional Email Text'));
+            echo $this->formTextarea($formStem . '[options][email_text]');
         ?>
         </div>
     </div>
