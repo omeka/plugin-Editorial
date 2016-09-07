@@ -3,7 +3,7 @@ $formStem = $block->getFormStem();
 $options = $block->getOptions();
 $usersForSelect = get_table_options('User');
 $currentUser = current_user();
-
+$owner = get_db()->getTable('EditorialBlockOwner')->findByBlock($block);
 unset ($usersForSelect['']);
 
 // allow some users to change who's allowed access
@@ -11,10 +11,10 @@ unset ($usersForSelect['']);
 $changeAllowed = false;
 
 if ($block->exists()) {
-    $ownerRecord = get_db()->getTable('EditorialBlockOwner')->findByBlock($block);
+    
     if (   $currentUser->role == 'admin'
         || $currentUser->role == 'super'
-        || $currentUser->id == $ownerRecord->user_id
+        || $currentUser->id == $owner->id
     ) {
         $changeAllowed = true;
     }
@@ -155,10 +155,21 @@ if ($block->exists()) {
         <div>
         <?php
             $recipientsArray = array();
+            if ($owner->id == $currentUser->id) {
+                $recipientsArray[$owner->id] = $owner->name . " " . __("(Owner)") . " " . __("(You)");
+            } else {
+                $recipientsArray[$owner->id] = $owner->name . " " . __("(Owner)");
+            }
+            
             if (isset ($options['allowed_users'])) {
                 foreach ($usersForSelect as $userId => $name) {
                     if (in_array($userId, $options['allowed_users'])) {
-                        $recipientsArray[$userId] = $name;
+                        if ($userId == $currentUser->id) {
+                            $recipientsArray[$userId] = $name . " " . __("(You)");
+                        } else {
+                            $recipientsArray[$userId] = $name;
+                        }
+                        
                     }
                 }
             }
@@ -177,7 +188,7 @@ if ($block->exists()) {
         </div>
         <div>
         <?php
-            echo $this->formLabel($formStem . '[options][email_text]', __('Optional Additional Email Text'));
+            echo $this->formLabel($formStem . '[options][email_text]', __('Additional Email Text (Optional)'));
             echo $this->formTextarea($formStem . '[options][email_text]');
         ?>
         </div>
