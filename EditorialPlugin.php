@@ -27,7 +27,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
               `parent_id` int(10) unsigned NOT NULL,
               `owner_id` int(10) unsigned NOT NULL,
               `added` TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00',
-              PRIMARY KEY (`id`),
+              PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
         ";
         $db->query($sql);
@@ -37,7 +37,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
               `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
               `block_id` int(10) unsigned NOT NULL,
               `owner_id` int(10) unsigned NOT NULL,
-              PRIMARY KEY (`id`),
+              PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
         ";
         $db->query($sql);
@@ -45,6 +45,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
     
     public function hookUninstall()
     {
+        $db = $this->_db;
         $sql = "DROP TABLE IF EXISTS `$db->EditorialBlockOwner`";
         $db->query($sql);
         
