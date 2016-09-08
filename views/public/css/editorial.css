@@ -23,7 +23,19 @@
 
 .editorial-block-responses {
     display: none;
+    clear: both;
 }
+
+.editorial-block-response-info {
+    float: left;
+    margin-right: 10px;
+}
+
+.editorial-block-response-container {
+    clear: both;
+    padding-top: 10px;
+}
+
 
 .editorial-block-response-container {
     margin-left: 25px;

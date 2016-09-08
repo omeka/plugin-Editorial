@@ -27,7 +27,6 @@ $topLevelResponses = get_db()->getTable('EditorialBlockResponse')->findResponses
         <?php foreach ($topLevelResponses as $response): ?>
 
         <div class='editorial-block-response-container'>
-            <div>
                 <div class='editorial-block-response-info'>
                 <?php
                     $owner = $response->getOwner();
@@ -37,7 +36,6 @@ $topLevelResponses = get_db()->getTable('EditorialBlockResponse')->findResponses
                     <img class='gravatar' src='<?php echo $url; ?>' />
                     <div><?php echo $owner->username; ?></div>
                 </div>
-            </div>
             <div class='editorial-block-response'>
             <?php echo $response->text; ?>
                 <?php $childResponses = $response->getChildResponses();
