@@ -24,7 +24,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             CREATE TABLE IF NOT EXISTS `$db->EditorialBlockResponse` (
               `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
               `text` text COLLATE utf8_unicode_ci NOT NULL,
-              `parent_id` int(10) unsigned NOT NULL,
+              `parent_id` int(10) unsigned NULL,
               `owner_id` int(10) unsigned NOT NULL,
               `added` TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00',
               PRIMARY KEY (`id`)
@@ -51,6 +51,12 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         
         $sql = "DROP TABLE IF EXISTS `$db->EditorialBlockResponse`";
         $db->query($sql);
+        
+        $editorialBlocks = $db->getTable('ExhibitPageBlock')->findBy(array('layout' => 'editorial-block'));
+        foreach ($editorialBlocks as $block) {
+            $block->delete();
+        }
+        
     }
     
     public function hookPublicHead()
