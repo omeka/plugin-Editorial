@@ -3,7 +3,7 @@ $formStem = $block->getFormStem();
 $options = $block->getOptions();
 $usersForSelect = get_table_options('User');
 $currentUser = current_user();
-$owner = get_db()->getTable('EditorialBlockOwner')->findByBlock($block);
+$owner = get_db()->getTable('EditorialBlockOwner')->findOwnerByBlock($block);
 unset ($usersForSelect['']);
 
 // allow some users to change who's allowed access
