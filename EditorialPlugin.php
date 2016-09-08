@@ -4,6 +4,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
 {
     protected $_hooks = array(
             'install',
+            'uninstall',
             'after_save_exhibit_page_block',
             'before_save_exhibit_page_block',
             'after_delete_exhibit_page_block',
@@ -39,6 +40,15 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
               PRIMARY KEY (`id`),
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
         ";
+        $db->query($sql);
+    }
+    
+    public function hookUninstall()
+    {
+        $sql = "DROP TABLE IF EXISTS `$db->EditorialBlockOwner`";
+        $db->query($sql);
+        
+        $sql = "DROP TABLE IF EXISTS `$db->EditorialBlockResponse`";
         $db->query($sql);
     }
     
