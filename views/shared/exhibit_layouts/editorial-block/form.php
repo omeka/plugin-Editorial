@@ -156,9 +156,9 @@ if ($block->exists()) {
         <?php
             $recipientsArray = array();
             if ($owner->id == $currentUser->id) {
-                $recipientsArray[$owner->id] = $owner->name . " " . __("(Owner)") . " " . __("(You)");
+                $recipientsArray[$owner->id] = $owner->name . " " . __("(Original Commenter)") . " " . __("(You)");
             } else {
-                $recipientsArray[$owner->id] = $owner->name . " " . __("(Owner)");
+                $recipientsArray[$owner->id] = $owner->name . " " . __("(Original Commenter)");
             }
             
             if (isset ($options['allowed_users'])) {
