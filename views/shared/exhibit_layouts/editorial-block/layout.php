@@ -5,7 +5,10 @@ $topLevelResponses = get_db()->getTable('EditorialBlockResponse')->findResponses
 ?>
 
 <div class='editorial-block public'>
-    <h3><?php echo __('Internal Comments'); ?></h3>
+    <div>
+        <div class="drawer closed" role="button" title="<?php echo __('Expand/Collapse'); ?>"></div>
+        <h3><?php echo __('Internal Comments'); ?></h3>
+    </div>
     <div class='editorial-block editorial-comment'>
         <div class='editorial-block-response-info'>
         <?php

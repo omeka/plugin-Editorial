@@ -1,0 +1,30 @@
+.editorial-block .drawer {
+    cursor: pointer;
+}
+
+.editorial-block .drawer::after {
+    content: "\f0da";
+    display: inline-block;
+    font-family: "FontAwesome";
+    font-size: 16px;
+    height: 20px;
+    width: 20px;
+    text-indent: 0;
+    float: left;
+    text-align: center;
+}
+
+.editorial-block .drawer.opened::after {
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    -o-transform: rotate(90deg);
+    transform: rotate(90deg);
+}
+
+.editorial-block-responses {
+    display: none;
+}
+
+.editorial-block-response-container {
+    margin-left: 25px;
+}

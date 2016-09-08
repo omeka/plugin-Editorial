@@ -45,6 +45,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
     public function hookPublicHead()
     {
         queue_css_file('editorial');
+        queue_js_file('editorial');
     }
     public function hookAdminHead()
     {
