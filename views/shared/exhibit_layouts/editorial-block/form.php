@@ -11,7 +11,6 @@ unset ($usersForSelect['']);
 $changeAllowed = false;
 
 if ($block->exists()) {
-    
     if (   $currentUser->role == 'admin'
         || $currentUser->role == 'super'
         || $currentUser->id == $owner->id

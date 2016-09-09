@@ -74,7 +74,11 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
     {
         $acl = $args['acl'];
         $acl->addRole('exhibit-contributor', 'contributor');
-        $acl->allow('exhibit-contributor', 'ExhibitBuilder_Exhibits', array('edit'));
+        $acl->allow('exhibit-contributor',
+                    'ExhibitBuilder_Exhibits',
+                    array('edit', 'showNotPublic'),
+                    new EditorialExhibitAccessAclAssertion
+                    );
     }
     
     public function hookAfterDeleteExhibitPageBlock($args)
@@ -114,21 +118,24 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         
         $options['response_ids'] = $responseIds;
         unset ($options['responses']);
-        
-        foreach ($options['edited_responses'] as $responseId => $responseData) {
-            $response = $responseTable->find($responseId);
-            $response->text = $responseData;
-            $response->save();
+        if (isset($options['edited_responses'])) {
+            foreach ($options['edited_responses'] as $responseId => $responseData) {
+                $response = $responseTable->find($responseId);
+                $response->text = $responseData;
+                $response->save();
+            }
         }
         
         unset ($options['edited_responses']);
 
-        foreach ($options['child_responses'] as $parentResponseId => $responseData) {
-            if (! empty($responseData)) {
-                $response = new EditorialBlockResponse;
-                $response->parent_id = $parentResponseId;
-                $response->text = $responseData;
-                $response->save();
+        if (isset($options['child_responses'])) {
+            foreach ($options['child_responses'] as $parentResponseId => $responseData) {
+                if (! empty($responseData)) {
+                    $response = new EditorialBlockResponse;
+                    $response->parent_id = $parentResponseId;
+                    $response->text = $responseData;
+                    $response->save();
+                }
             }
         }
         
@@ -152,6 +159,8 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             $blockOwner->owner_id = $owner->id;
             $blockOwner->save();
         }
+        
+        $this->adjustPermissions($block);
 
         if ($options['send_emails']) {
             $this->sendEmails($block);
@@ -171,7 +180,6 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
     {
         $options = $block->getOptions();
         $db = $this->_db;
-        $restrictionTable = $db->getTable('EditorialBlockRestriction');
         $userTable = $db->getTable('User');
 
         $userSelect = $userTable->getSelect();
@@ -201,6 +209,53 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             $mail->send();
         } catch(Exception $e) {
             _log($e);
+        }
+    }
+    
+    protected function adjustPermissions($block)
+    {
+        $options = $block->getOptions();
+        $exhibit = $block->getPage()->getExhibit();
+        $db = $this->_db;
+        $userTable = $db->getTable('User');
+        $accessTable = $db->getTable('EditorialExhibitAccess');
+
+        if (empty($options['allowed_users'])) {
+            $users = array();
+        } else {
+            $userSelect = $userTable->getSelect();
+            $userSelect->where("id IN (?)", $options['allowed_users']);
+            $users = $userTable->fetchObjects($userSelect);
+        }
+        foreach ($users as $user) {
+            // don't demote supers or admins
+            if ($user->role == 'super' || $user->role == 'admin') {
+                continue;
+            }
+            $user->role = 'exhibit-contributor';
+            $user->save();
+            $accessRecords = $accessTable->findBy(array('user_id' => $user->id,
+                                                        'exhibit_id' => $exhibit->id));
+            if (empty($accessRecords)) {
+                $accessRecord = new EditorialExhibitAccess();
+                $accessRecord->user_id = $user->id;
+                $accessRecord->exhibit_id = $exhibit->id;
+                $accessRecord->block_id = $block->id;
+                $accessRecord->save();
+            }
+        }
+        
+        //clean out users who have had access revoked
+        $select = $accessTable->getSelect();
+        $select->where("exhibit_id = ?", $exhibit->id);
+        $select->where("block_id = ?", $block->id);
+        if (! empty($options['allowed_users'])) {
+            $select->where("user_id NOT IN (?)", $options['allowed_users']);
+        }
+        
+        $oldAccessRecords = $accessTable->fetchObjects($select);
+        foreach ($oldAccessRecords as $oldAccessRecord) {
+            $oldAccessRecord->delete();
         }
     }
     
