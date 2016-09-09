@@ -41,6 +41,17 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
         ";
         $db->query($sql);
+        
+        $sql = "
+            CREATE TABLE IF NOT EXISTS `$db->EditorialExhibitAccess` (
+              `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+              `exhibit_id` int(10) unsigned NOT NULL,
+              `block_id` int(10) unsigned NOT NULL,
+              `user_id` int(10) unsigned NOT NULL,
+              PRIMARY KEY (`id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+        ";
+        $db->query($sql);
     }
     
     public function hookUninstall()
@@ -50,6 +61,9 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $db->query($sql);
         
         $sql = "DROP TABLE IF EXISTS `$db->EditorialBlockResponse`";
+        $db->query($sql);
+
+        $sql = "DROP TABLE IF EXISTS `$db->EditorialExhibitAccess`";
         $db->query($sql);
         
         $editorialBlocks = $db->getTable('ExhibitPageBlock')->findBy(array('layout' => 'editorial-block'));
