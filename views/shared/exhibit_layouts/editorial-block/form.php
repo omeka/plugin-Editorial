@@ -199,6 +199,7 @@ if ($block->exists()) {
         <?php 
             if ($changeAllowed) {
                 unset ($usersForSelect[$owner->id]);
+                unset ($usersForSelect[$currentUser->id]);
                 echo $this->formLabel($formStem . '[options][allowed_users]', __('Grant Access To:'));
                 echo $this->formSelect($formStem . '[options][allowed_users]',
                                      @$options['allowed_users'],
