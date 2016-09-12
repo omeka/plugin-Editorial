@@ -4,6 +4,7 @@ $options = $block->getOptions();
 $usersForSelect = get_table_options('User');
 $currentUser = current_user();
 $owner = get_db()->getTable('EditorialBlockOwner')->findOwnerByBlock($block);
+
 unset ($usersForSelect['']);
 
 // allow some users to change who's allowed access
@@ -72,7 +73,9 @@ if ($block->exists()) {
     <?php endforeach; ?>
     
     <div class='editorial-block-responses'>
-        <h5>Conversation</h5>
+        <?php if (count($topLevelResponses) !=0 ): ?>
+        <h5><?php __('Conversation'); ?></h5>
+        <?php endif; ?>
         <?php foreach ($topLevelResponses as $response): ?>
 
         <div class='editorial-block-response-container'>
@@ -195,7 +198,8 @@ if ($block->exists()) {
     <div class='users-select'>
         <?php 
             if ($changeAllowed) {
-                echo $this->formLabel($formStem . '[options][allowed_users]', __('Users With Access'));
+                unset ($usersForSelect[$owner->id]);
+                echo $this->formLabel($formStem . '[options][allowed_users]', __('Grant Access To:'));
                 echo $this->formSelect($formStem . '[options][allowed_users]',
                                      @$options['allowed_users'],
                                      array('multiple' => true, 'size' => 10),

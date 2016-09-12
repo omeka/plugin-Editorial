@@ -243,11 +243,10 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         }
         foreach ($users as $user) {
             // don't demote supers or admins
-            if ($user->role == 'super' || $user->role == 'admin') {
-                continue;
+            if ($user->role != 'super' || $user->role != 'admin') {
+                $user->role = 'exhibit-contributor';
+                $user->save();
             }
-            $user->role = 'exhibit-contributor';
-            $user->save();
             $accessRecords = $accessTable->findBy(array('user_id' => $user->id,
                                                         'exhibit_id' => $exhibit->id));
             if (empty($accessRecords)) {

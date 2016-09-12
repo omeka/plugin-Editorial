@@ -11,7 +11,7 @@ class Table_EditorialBlockOwner extends Omeka_Db_Table
         return $this->fetchObject($select);
     }
     
-    public function findOwnerByBlock($block) 
+    public function findOwnerByBlock($block)
     {
         if ($block->exists()) {
             $record = $this->findByBlock($block);
