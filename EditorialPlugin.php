@@ -125,7 +125,6 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         
         $responseTable = $this->_db->getTable('EditorialBlockResponse');
         $options = $block->getOptions();
-        debug(print_r($options, true));
         $responseIds = empty($options['response_ids']) ?  array() : $options['response_ids'];
         foreach ($options['responses'] as $responseData) {
             if (! empty ($responseData)) {
@@ -187,13 +186,10 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             // @TODO since I've resorted to this technique, maybe
             // try to revert back to using the tables instead of
             // the block options?
-            debug('before update owner record');
-            debug(print_r($options, true));
             $blockOwnerRecord = $this->_db->getTable('EditorialBlockOwner')->findByBlock($options['old_id']);
             $blockOwnerRecord->block_id = $block->id;
             $blockOwnerRecord->save();
             
-            debug('before update access records');
             $accessRecords = $this->_db->getTable('EditorialExhibitAccess')->findBy(array('block_id' => $options['old_id']));
             foreach ($accessRecords as $accessRecord) {
                 $accessRecord->block_id = $block->id;
