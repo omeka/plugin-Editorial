@@ -3,7 +3,7 @@ $formStem = $block->getFormStem();
 $options = $block->getOptions();
 $usersForSelect = get_table_options('User');
 $currentUser = current_user();
-$owner = get_db()->getTable('EditorialBlockOwner')->findOwnerByBlock($block);
+
 
 unset ($usersForSelect['']);
 
@@ -12,13 +12,15 @@ unset ($usersForSelect['']);
 $changeAllowed = false;
 
 if ($block->exists()) {
+    $blockOwner = get_db()->getTable('EditorialBlockOwner')->findOwnerByBlock($block);
     if (   $currentUser->role == 'admin'
         || $currentUser->role == 'super'
-        || $currentUser->id == $owner->id
+        || $currentUser->id == $blockOwner->id
     ) {
         $changeAllowed = true;
     }
 } else {
+    $blockOwner = $currentUser;
     $changeAllowed = true;
 }
 
@@ -29,17 +31,19 @@ if ($block->exists()) {
 <?php else: ?>
 <div class="block-text editorial no-access">
 <?php endif; ?>
+
+
+
     <h4><?php echo __('Comment'); ?></h4>
     
     
     <div class='editorial-block-response-info'>
     <?php
-        $owner = get_db()->getTable('EditorialBlockOwner')->findOwnerByBlock($block);
-        $hash = md5(strtolower(trim($owner->email)));
+        $hash = md5(strtolower(trim($blockOwner->email)));
         $url = "//www.gravatar.com/avatar/$hash";
     ?>
         <img class='gravatar' src='<?php echo $url; ?>' />
-        <div><?php echo $owner->username; ?></div>
+        <div><?php echo $blockOwner->username; ?></div>
     </div>
     <?php if ($changeAllowed): ?>
     <?php echo $this->exhibitFormText($block); ?>
@@ -147,6 +151,10 @@ if ($block->exists()) {
         <div class="drawer"></div>
     </div>
     
+    <?php if ($block->exists()): ?>
+    <input type='hidden' name='<?php echo $formStem; ?>[options][old_id]' value='<?php echo $block->id; ?>' />
+    <?php endif; ?>
+
     <div class='send-emails'>
         <div>
         <?php
@@ -157,10 +165,11 @@ if ($block->exists()) {
         <div>
         <?php
             $recipientsArray = array();
-            if ($owner->id == $currentUser->id) {
-                $recipientsArray[$owner->id] = $owner->name . " " . __("(Original Commenter)") . " " . __("(You)");
+            if ($blockOwner->id == $currentUser->id) {
+                
+                $recipientsArray[$owner->id] = $blockOwner->name . " " . __("(Original Commenter)") . " " . __("(You)");
             } else {
-                $recipientsArray[$owner->id] = $owner->name . " " . __("(Original Commenter)");
+                $recipientsArray[$owner->id] = $blockOwner->name . " " . __("(Original Commenter)");
             }
             
             if (isset ($options['allowed_users'])) {

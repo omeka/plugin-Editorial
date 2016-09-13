@@ -32,6 +32,10 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         ";
         $db->query($sql);
         
+        // only other way to keep track of ownership is to 
+        // make it an input on the form, which creates the
+        // possibility to inspect the element and change ownership
+        
         $sql = "
             CREATE TABLE IF NOT EXISTS `$db->EditorialBlockOwner` (
               `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -57,6 +61,14 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
     public function hookUninstall()
     {
         $db = $this->_db;
+        
+        // delete these first so the callback don't look for deleted tables
+        
+        $editorialBlocks = $db->getTable('ExhibitPageBlock')->findBy(array('layout' => 'editorial-block'));
+        foreach ($editorialBlocks as $block) {
+            $block->delete();
+        }
+        
         $sql = "DROP TABLE IF EXISTS `$db->EditorialBlockOwner`";
         $db->query($sql);
         
@@ -65,12 +77,6 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
 
         $sql = "DROP TABLE IF EXISTS `$db->EditorialExhibitAccess`";
         $db->query($sql);
-        
-        $editorialBlocks = $db->getTable('ExhibitPageBlock')->findBy(array('layout' => 'editorial-block'));
-        foreach ($editorialBlocks as $block) {
-            $block->delete();
-        }
-        
     }
     
     public function hookPublicHead()
@@ -119,7 +125,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         
         $responseTable = $this->_db->getTable('EditorialBlockResponse');
         $options = $block->getOptions();
-        
+        debug(print_r($options, true));
         $responseIds = empty($options['response_ids']) ?  array() : $options['response_ids'];
         foreach ($options['responses'] as $responseData) {
             if (! empty ($responseData)) {
@@ -161,10 +167,11 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
     {
         $block = $args['record'];
         
-        $options = $block->getOptions();
         if ($block->layout !== 'editorial-block') {
             return;
         }
+        
+        $options = $block->getOptions();
         
         if ($args['insert']) {
             $blockOwner = new EditorialBlockOwner;
@@ -172,7 +179,30 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             $owner = current_user();
             $blockOwner->owner_id = $owner->id;
             $blockOwner->save();
+        } else {
+
+            // rewrite stored block_ids by switching out the old id
+            // for the newly saved one.
+            
+            // @TODO since I've resorted to this technique, maybe
+            // try to revert back to using the tables instead of
+            // the block options?
+            debug('before update owner record');
+            debug(print_r($options, true));
+            $blockOwnerRecord = $this->_db->getTable('EditorialBlockOwner')->findByBlock($options['old_id']);
+            $blockOwnerRecord->block_id = $block->id;
+            $blockOwnerRecord->save();
+            
+            debug('before update access records');
+            $accessRecords = $this->_db->getTable('EditorialExhibitAccess')->findBy(array('block_id' => $options['old_id']));
+            foreach ($accessRecords as $accessRecord) {
+                $accessRecord->block_id = $block->id;
+                $accessRecord->save();
+            }
         }
+        
+
+        
         
         $this->adjustPermissions($block);
 
