@@ -167,9 +167,9 @@ if ($block->exists()) {
             $recipientsArray = array();
             if ($blockOwner->id == $currentUser->id) {
                 
-                $recipientsArray[$owner->id] = $blockOwner->name . " " . __("(Original Commenter)") . " " . __("(You)");
+                $recipientsArray[$blockOwner->id] = $blockOwner->name . " " . __("(Original Commenter)") . " " . __("(You)");
             } else {
-                $recipientsArray[$owner->id] = $blockOwner->name . " " . __("(Original Commenter)");
+                $recipientsArray[$blockOwner->id] = $blockOwner->name . " " . __("(Original Commenter)");
             }
             
             if (isset ($options['allowed_users'])) {
@@ -207,7 +207,7 @@ if ($block->exists()) {
     <div class='users-select'>
         <?php 
             if ($changeAllowed) {
-                unset ($usersForSelect[$owner->id]);
+                unset ($usersForSelect[$blockOwner->id]);
                 unset ($usersForSelect[$currentUser->id]);
                 echo $this->formLabel($formStem . '[options][allowed_users]', __('Grant Access To:'));
                 echo $this->formSelect($formStem . '[options][allowed_users]',

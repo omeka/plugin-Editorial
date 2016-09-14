@@ -108,11 +108,16 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $responseTable = $this->_db->getTable('EditorialBlockResponse');
         $responses = $responseTable->findResponsesForBlock($block);
         foreach ($responses as $response) {
-            $response->delete();
+            //sad voodoo for response somehow sometimes being null
+            if ($response) {
+                $response->delete();
+            }
         }
         
         $ownerRecord = $this->_db->getTable('EditorialBlockOwner')->findByBlock($block);
-        $ownerRecord->delete();
+        if ($ownerRecord) {
+            $ownerRecord->delete();
+        }
     }
     
     public function hookBeforeSaveExhibitPageBlock($args)
@@ -126,17 +131,22 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $responseTable = $this->_db->getTable('EditorialBlockResponse');
         $options = $block->getOptions();
         $responseIds = empty($options['response_ids']) ?  array() : $options['response_ids'];
-        foreach ($options['responses'] as $responseData) {
-            if (! empty ($responseData)) {
-                $response = new EditorialBlockResponse;
-                $response->text = $responseData;
-                $response->save();
-                $responseIds[] = $response->id;
-            }
-        }
         
+        if (isset($options['responses'])) {
+            foreach ($options['responses'] as $responseData) {
+                if (! empty ($responseData)) {
+                    $response = new EditorialBlockResponse;
+                    $response->text = $responseData;
+                    $response->save();
+                    $responseIds[] = $response->id;
+                }
+            }
+            
+
+        }
         $options['response_ids'] = $responseIds;
         unset ($options['responses']);
+        
         if (isset($options['edited_responses'])) {
             foreach ($options['edited_responses'] as $responseId => $responseData) {
                 $response = $responseTable->find($responseId);
@@ -172,20 +182,9 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         
         $options = $block->getOptions();
         
-        if ($args['insert']) {
-            $blockOwner = new EditorialBlockOwner;
-            $blockOwner->block_id = $block->id;
-            $owner = current_user();
-            $blockOwner->owner_id = $owner->id;
-            $blockOwner->save();
-        } else {
-
-            // rewrite stored block_ids by switching out the old id
-            // for the newly saved one.
-            
-            // @TODO since I've resorted to this technique, maybe
-            // try to revert back to using the tables instead of
-            // the block options?
+        debug('insert? ' . $args['insert']);
+        
+        if (isset($options['old_id'])) {
             $blockOwnerRecord = $this->_db->getTable('EditorialBlockOwner')->findByBlock($options['old_id']);
             $blockOwnerRecord->block_id = $block->id;
             $blockOwnerRecord->save();
@@ -195,11 +194,18 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
                 $accessRecord->block_id = $block->id;
                 $accessRecord->save();
             }
-        }
-        
 
-        
-        
+        } else {
+            $blockOwnerRecord = $this->_db->getTable('EditorialBlockOwner')->findByBlock($block->id);
+            if (! $blockOwnerRecord) {
+                $blockOwner = new EditorialBlockOwner;
+                $blockOwner->block_id = $block->id;
+                $owner = current_user();
+                $blockOwner->owner_id = $owner->id;
+                $blockOwner->save();
+            }
+        }
+
         $this->adjustPermissions($block);
 
         if ($options['send_emails']) {
