@@ -2,7 +2,6 @@
 
 class EditorialExhibitAccessAclAssertion implements Zend_Acl_Assert_Interface
 {
-
     public function assert(
         Zend_Acl $acl,
         Zend_Acl_Role_Interface $role = null,
@@ -24,10 +23,12 @@ class EditorialExhibitAccessAclAssertion implements Zend_Acl_Assert_Interface
                 $db = get_db();
                 $accessTable = $db->getTable('EditorialExhibitAccess');
                 $accessRecords = $accessTable->findBy(array('user_id' => $role->id,
-                                                            'exhibit_id' => $resource->id));
-                return ! empty($accessRecords);
+                                                            'exhibit_id' => $resource->id, ));
+
+                return !empty($accessRecords);
             }
         }
+
         return false;
     }
 }

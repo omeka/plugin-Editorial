@@ -19,12 +19,13 @@ class Table_EditorialBlockResponse extends Omeka_Db_Table
                 $responses[] = $response;
             } else {
                 // remove from the list in the block
-                unset ($responseIds[$key]);
+                unset($responseIds[$key]);
             }
         }
-        
+
         $options['response_ids'] = $responseIds;
         $block->setOptions($options);
+
         return $responses;
     }
 }

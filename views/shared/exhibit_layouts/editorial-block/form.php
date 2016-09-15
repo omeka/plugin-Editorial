@@ -4,8 +4,7 @@ $options = $block->getOptions();
 $usersForSelect = get_table_options('User');
 $currentUser = current_user();
 
-
-unset ($usersForSelect['']);
+unset($usersForSelect['']);
 
 // allow some users to change who's allowed access
 
@@ -13,7 +12,7 @@ $changeAllowed = false;
 
 if ($block->exists()) {
     $blockOwner = get_db()->getTable('EditorialBlockOwner')->findOwnerByBlock($block);
-    if (   $currentUser->role == 'admin'
+    if ($currentUser->role == 'admin'
         || $currentUser->role == 'super'
         || $currentUser->id == $blockOwner->id
     ) {
@@ -23,7 +22,6 @@ if ($block->exists()) {
     $blockOwner = $currentUser;
     $changeAllowed = true;
 }
-
 
 ?>
 <?php if (EditorialPlugin::userHasAccess($block)) :?>
@@ -59,9 +57,9 @@ if ($block->exists()) {
         <div class='editorial-block-response-new'>
             <?php
 
-                echo $this->formLabel($formStem . "[options][responses][]", 'Leave new response');
+                echo $this->formLabel($formStem.'[options][responses][]', 'Leave new response');
                 echo $this->formTextarea(
-                        $formStem . "[options][responses][]",
+                        $formStem.'[options][responses][]',
                         '',
                         array('rows' => 7)
                     );
@@ -72,12 +70,12 @@ if ($block->exists()) {
         // so spoof in the existing response_ids data
         foreach ($options['response_ids'] as $responseId):
     ?>
-    <input type='hidden' name='<?php echo $formStem . "[options][response_ids][]"; ?>' value='<?php echo $responseId; ?>' />
+    <input type='hidden' name='<?php echo $formStem.'[options][response_ids][]'; ?>' value='<?php echo $responseId; ?>' />
     
     <?php endforeach; ?>
     
     <div class='editorial-block-responses'>
-        <?php if (count($topLevelResponses) !=0 ): ?>
+        <?php if (count($topLevelResponses) != 0): ?>
         <h5><?php __('Conversation'); ?></h5>
         <?php endif; ?>
         <?php foreach ($topLevelResponses as $response): ?>
@@ -101,11 +99,11 @@ if ($block->exists()) {
             </div>
             <div class='editorial-block-response'>
             <?php if ($currentUser->id == $response->owner_id) {
-                      echo $this->formTextarea($block->getFormStem() . "[options][edited_responses][{$response->id}]",
+    echo $this->formTextarea($block->getFormStem()."[options][edited_responses][{$response->id}]",
                             $response->text, array('rows' => 8));
-                  } else {
-                      echo $response->text;
-                  }
+} else {
+    echo $response->text;
+}
             ?>
                 <?php $childResponses = $response->getChildResponses();
                     foreach ($childResponses as $childResponse) :
@@ -130,7 +128,7 @@ if ($block->exists()) {
                     <p class='editorial-block reply-button'>Reply</p>
                     <div class='editorial-block reply'>
                     <?php
-                    echo $this->formTextarea($block->getFormStem() . "[options][child_responses][{$response->id}]",
+                    echo $this->formTextarea($block->getFormStem()."[options][child_responses][{$response->id}]",
                             '', array('rows' => 8));
                     ?>
                     </div>
@@ -158,38 +156,36 @@ if ($block->exists()) {
     <div class='send-emails'>
         <div>
         <?php
-            echo $this->formLabel($formStem . '[options][send_emails]', __('Send Email Notifications?') );
-            echo $this->formCheckbox($formStem . '[options][send_emails]');
+            echo $this->formLabel($formStem.'[options][send_emails]', __('Send Email Notifications?'));
+            echo $this->formCheckbox($formStem.'[options][send_emails]');
             ?>
         </div>
         <div>
         <?php
             $recipientsArray = array();
             if ($blockOwner->id == $currentUser->id) {
-                
-                $recipientsArray[$blockOwner->id] = $blockOwner->name . " " . __("(Original Commenter)") . " " . __("(You)");
+                $recipientsArray[$blockOwner->id] = $blockOwner->name.' '.__('(Original Commenter)').' '.__('(You)');
             } else {
-                $recipientsArray[$blockOwner->id] = $blockOwner->name . " " . __("(Original Commenter)");
+                $recipientsArray[$blockOwner->id] = $blockOwner->name.' '.__('(Original Commenter)');
             }
-            
-            if (isset ($options['allowed_users'])) {
+
+            if (isset($options['allowed_users'])) {
                 foreach ($usersForSelect as $userId => $name) {
                     if (in_array($userId, $options['allowed_users'])) {
                         if ($userId == $currentUser->id) {
-                            $recipientsArray[$userId] = $name . " " . __("(You)");
+                            $recipientsArray[$userId] = $name.' '.__('(You)');
                         } else {
                             $recipientsArray[$userId] = $name;
                         }
-                        
                     }
                 }
             }
-            echo $this->formLabel($formStem . '[options][email_recipients]', __('Select Recipients'));
-            if (empty ($recipientsArray)) {
-                echo "<p>" . __("All the users you give access to below will receive an email.") . "</p>";
-                echo "<p>" . __("After users have been given access, you can select them here.") . "</p>";
+            echo $this->formLabel($formStem.'[options][email_recipients]', __('Select Recipients'));
+            if (empty($recipientsArray)) {
+                echo '<p>'.__('All the users you give access to below will receive an email.').'</p>';
+                echo '<p>'.__('After users have been given access, you can select them here.').'</p>';
             } else {
-                echo $this->formSelect($formStem . '[options][email_recipients]',
+                echo $this->formSelect($formStem.'[options][email_recipients]',
                                      array(),
                                      array('multiple' => true, 'size' => count($recipientsArray)),
                                      $recipientsArray
@@ -199,18 +195,18 @@ if ($block->exists()) {
         </div>
         <div>
         <?php
-            echo $this->formLabel($formStem . '[options][email_text]', __('Additional Email Text (Optional)'));
-            echo $this->formTextarea($formStem . '[options][email_text]');
+            echo $this->formLabel($formStem.'[options][email_text]', __('Additional Email Text (Optional)'));
+            echo $this->formTextarea($formStem.'[options][email_text]');
         ?>
         </div>
     </div>
     <div class='users-select'>
         <?php 
             if ($changeAllowed) {
-                unset ($usersForSelect[$blockOwner->id]);
-                unset ($usersForSelect[$currentUser->id]);
-                echo $this->formLabel($formStem . '[options][allowed_users]', __('Grant Access To:'));
-                echo $this->formSelect($formStem . '[options][allowed_users]',
+                unset($usersForSelect[$blockOwner->id]);
+                unset($usersForSelect[$currentUser->id]);
+                echo $this->formLabel($formStem.'[options][allowed_users]', __('Grant Access To:'));
+                echo $this->formSelect($formStem.'[options][allowed_users]',
                                      @$options['allowed_users'],
                                      array('multiple' => true, 'size' => 10),
                                      $usersForSelect
