@@ -5,6 +5,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
     protected $_hooks = array(
             'install',
             'uninstall',
+            'deactivate',
             'after_save_exhibit_page_block',
             'before_save_exhibit_page_block',
             'after_delete_exhibit_page_block',
@@ -17,6 +18,17 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
                 'exhibit_layouts',
             );
 
+    
+    public function hookDeactivate()
+    {
+        $db = $this->_db;
+        $exhibitContributors = $db->getTable('User')->findBy(array('role' => 'exhibit-contributor'));
+        foreach($exhibitContributors as $user) {
+            $user->role = 'contributor';
+            $user->save();
+        }
+    }
+    
     public function hookInstall()
     {
         $db = $this->_db;
