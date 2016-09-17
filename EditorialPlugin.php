@@ -23,6 +23,8 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
     {
         $db = $this->_db;
         $exhibitContributors = $db->getTable('User')->findBy(array('role' => 'exhibit-contributor'));
+        
+        // assumes that original role was Contributor
         foreach($exhibitContributors as $user) {
             $user->role = 'contributor';
             $user->save();
@@ -75,10 +77,17 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $db = $this->_db;
 
         // delete these first so the callback don't look for deleted tables
-
         $editorialBlocks = $db->getTable('ExhibitPageBlock')->findBy(array('layout' => 'editorial-block'));
         foreach ($editorialBlocks as $block) {
             $block->delete();
+        }
+        
+        $exhibitContributors = $db->getTable('User')->findBy(array('role' => 'exhibit-contributor'));
+        
+        // assumes that original role was Contributor
+        foreach($exhibitContributors as $user) {
+            $user->role = 'contributor';
+            $user->save();
         }
 
         $sql = "DROP TABLE IF EXISTS `$db->EditorialBlockOwner`";
@@ -283,6 +292,8 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         }
         foreach ($users as $user) {
             // don't demote supers or admins
+            // also basically assumes that Contributors are the
+            // ones being promoted
             if ($user->role != 'super' && $user->role != 'admin') {
                 $user->role = 'exhibit-contributor';
                 $user->save();
