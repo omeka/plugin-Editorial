@@ -244,7 +244,6 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $options = $block->getOptions();
         $db = $this->_db;
         $userTable = $db->getTable('User');
-
         $userSelect = $userTable->getSelect();
         $userSelect->where('id IN (?)', $options['email_recipients']);
         $users = $userTable->fetchObjects($userSelect);

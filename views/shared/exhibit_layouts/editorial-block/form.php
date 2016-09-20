@@ -157,7 +157,10 @@ if ($block->exists()) {
         <div>
         <?php
             echo $this->formLabel($formStem.'[options][send_emails]', __('Send Email Notifications?'));
-            echo $this->formCheckbox($formStem.'[options][send_emails]');
+            echo $this->formCheckbox($formStem.'[options][send_emails]',
+                                     null,
+                                     array('class' => 'email-checkbox')
+                    );
             ?>
         </div>
         <div>
@@ -187,7 +190,7 @@ if ($block->exists()) {
             } else {
                 echo $this->formSelect($formStem.'[options][email_recipients]',
                                      array(),
-                                     array('multiple' => true, 'size' => count($recipientsArray)),
+                                     array('class' => 'email-select',  'multiple' => true, 'size' => count($recipientsArray)),
                                      $recipientsArray
                 );
             }
