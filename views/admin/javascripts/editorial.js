@@ -18,7 +18,7 @@
             $(this).siblings('.reply').toggle();
         });
         
-        $('.users-select select').change( function() {
+        $('#exhibit-page-form').on('change', '.users-select select', function() {
             var target = $(this);
             var emailSelect = target.parents('.layout-options').find('.email-select');
             emailSelect.find('option').each(function(index) {
@@ -35,7 +35,7 @@
             emailSelect.attr('size', selectedUsers.length + 2);
         });
         
-        $('.email-checkbox').click(function() {
+        $('#exhibit-page-form').on('click', '.email-checkbox', function() {
             var emailSelect = $(this).parents('.layout-options').find('.email-select');
             if (this.checked) {
                 emailSelect.find('option').prop('selected', true);
@@ -44,7 +44,7 @@
             }
         });
         
-        $('.email-select').change(function() {
+        $('#exhibit-page-form').on('change', '.email-select', function() {
             var emailCheckbox = $(this).parents('.layout-options').find('.email-checkbox');
             var hasSelected = false;
             $(this).find('option').each(function() {
@@ -55,6 +55,5 @@
             });
             emailCheckbox.prop('checked', hasSelected);
         });
-        
     });
 })(jQuery);
