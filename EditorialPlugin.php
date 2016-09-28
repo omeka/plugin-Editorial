@@ -256,7 +256,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $mail->addHeader('X-Mailer', 'PHP/'.phpversion());
         $mail->setFrom(get_option('administrator_email'), get_option('site_title'));
         $mail->addTo($userEmails);
-        $subject = __('New content to review at %s ', "<a href='".WEB_ROOT."'></a>");
+        $subject = __('New content to review at %s ', get_option('site_title'));
 
         $body = '';
 
@@ -264,7 +264,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $body .= '<br/>';
         $body .= snippet($block->text, 0, 250);
 
-        $body .= '<p>'.__('View the page at ').record_url($block->getPage(), 'edit', true).'</p>';
+        $body .= '<p>'.__('View the page at ').record_url($block->getPage(), 'edit-page', true).'</p>';
         $mail->setSubject($subject);
         $mail->setBodyHtml($body);
         try {
