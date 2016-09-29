@@ -322,9 +322,9 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         }
     }
 
-    public static function userHasAccess($block, $user = null)
+    public static function userHasAccess($record, $user = null)
     {
-        if (!$block->exists()) {
+        if (!$record->exists()) {
             return true;
         }
         if (!$user) {
@@ -337,21 +337,38 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         if ($user->role == 'super' || $user->role == 'admin') {
             return true;
         }
-
-        $options = $block->getOptions();
-        $ownerRecord = get_db()->getTable('EditorialBlockOwner')->findByBlock($block);
-
-        if ($user->id == $ownerRecord->owner_id) {
-            return true;
+        
+        switch (get_class($record)) {
+            case 'ExhibitPageBlock':
+                $options = $block->getOptions();
+                $ownerRecord = get_db()->getTable('EditorialBlockOwner')->findByBlock($block);
+        
+                if ($user->id == $ownerRecord->owner_id) {
+                    return true;
+                }
+        
+                if (empty($options['allowed_users'])) {
+                    return false;
+                }
+        
+                if (in_array($user->id, $options['allowed_users'])) {
+                    return true;
+                }
+            break;
+            
+            case 'EditorialBlockResponse':
+                if ($record->owner_id == $user->id) {
+                    return true;
+                }
+                return false;
+            break;
+            
+            default:
+                return false;
+            break;
         }
 
-        if (empty($options['allowed_users'])) {
-            return false;
-        }
 
-        if (in_array($user->id, $options['allowed_users'])) {
-            return true;
-        }
 
         return false;
     }

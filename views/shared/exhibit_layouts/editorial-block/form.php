@@ -98,7 +98,8 @@ if ($block->exists()) {
                 </div>
             </div>
             <div class='editorial-block-response'>
-            <?php if ($currentUser->id == $response->owner_id) {
+            <?php 
+if (EditorialPlugin::userHasAccess($response)) {
     echo $this->formTextarea($block->getFormStem()."[options][edited_responses][{$response->id}]",
                             $response->text, array('rows' => 8));
 } else {
@@ -119,11 +120,18 @@ if ($block->exists()) {
                         <div><?php echo $owner->username; ?></div>
                     </div>
                     <div>
-                    <?php echo $childResponse->text; ?>
+            <?php
+if (EditorialPlugin::userHasAccess($childResponse)) {
+    echo $this->formTextarea($block->getFormStem()."[options][edited_responses][{$childResponse->id}]",
+                            $childResponse->text, array('rows' => 8));
+} else {
+    echo $childResponse->text;
+}
+            ?>
                     </div>
                 </div>
                 <?php endforeach; ?>
-            
+
                 <div>
                     <p class='editorial-block reply-button'>Reply</p>
                     <div class='editorial-block reply'>

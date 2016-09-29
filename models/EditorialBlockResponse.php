@@ -25,6 +25,13 @@ class EditorialBlockResponse extends Omeka_Record_AbstractRecord
     {
         return $this->getTable()->findBy(array('parent_id' => $this->id));
     }
+    
+    protected function afterSave($args)
+    {
+        if (empty($this->text)) {
+            $this->delete();
+        }
+    }
 
     protected function afterDelete()
     {
