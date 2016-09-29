@@ -120,6 +120,9 @@ if (EditorialPlugin::userHasAccess($response)) {
                         <div><?php echo $owner->username; ?></div>
                     </div>
                     <div>
+                        <?php echo snippet($childResponse->text, 0, 100); ?>
+                    </div>
+                    <div>
             <?php
 if (EditorialPlugin::userHasAccess($childResponse)) {
     echo $this->formTextarea($block->getFormStem()."[options][edited_responses][{$childResponse->id}]",
