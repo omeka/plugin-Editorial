@@ -18,19 +18,18 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
                 'exhibit_layouts',
             );
 
-    
     public function hookDeactivate()
     {
         $db = $this->_db;
         $exhibitContributors = $db->getTable('User')->findBy(array('role' => 'exhibit-contributor'));
-        
+
         // assumes that original role was Contributor
-        foreach($exhibitContributors as $user) {
+        foreach ($exhibitContributors as $user) {
             $user->role = 'contributor';
             $user->save();
         }
     }
-    
+
     public function hookInstall()
     {
         $db = $this->_db;
@@ -81,11 +80,11 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         foreach ($editorialBlocks as $block) {
             $block->delete();
         }
-        
+
         $exhibitContributors = $db->getTable('User')->findBy(array('role' => 'exhibit-contributor'));
-        
+
         // assumes that original role was Contributor
-        foreach($exhibitContributors as $user) {
+        foreach ($exhibitContributors as $user) {
             $user->role = 'contributor';
             $user->save();
         }
@@ -337,38 +336,37 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         if ($user->role == 'super' || $user->role == 'admin') {
             return true;
         }
-        
+
         switch (get_class($record)) {
             case 'ExhibitPageBlock':
                 $options = $block->getOptions();
                 $ownerRecord = get_db()->getTable('EditorialBlockOwner')->findByBlock($block);
-        
+
                 if ($user->id == $ownerRecord->owner_id) {
                     return true;
                 }
-        
+
                 if (empty($options['allowed_users'])) {
                     return false;
                 }
-        
+
                 if (in_array($user->id, $options['allowed_users'])) {
                     return true;
                 }
             break;
-            
+
             case 'EditorialBlockResponse':
                 if ($record->owner_id == $user->id) {
                     return true;
                 }
+
                 return false;
             break;
-            
+
             default:
                 return false;
             break;
         }
-
-
 
         return false;
     }
