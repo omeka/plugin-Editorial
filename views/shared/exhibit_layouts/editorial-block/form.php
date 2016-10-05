@@ -30,22 +30,22 @@ if ($block->exists()) {
 <div class="block-text editorial no-access">
 <?php endif; ?>
 
-    <div class='editorial-block-response-container original'>
-    <?php
-        $hiddenInput = "<input type='hidden' name='" . $formStem . "[text]' value='" . $block->text . "' />";
-        echo $this->partial('single-response.php', array(
-                'original' => true,
-                'originalResponse' => $block->text,
-                'owner' => $blockOwner,
-                'changeAllowed' => $changeAllowed,
-                'editableResponse' => $this->exhibitFormText($block),
-                'hiddenInput' => $hiddenInput
-            )
-        );
-    ?>
-    </div>
 
     <?php if ($block->exists()): ?>
+        <div class='editorial-block-response-container original'>
+        <?php
+            $hiddenInput = "<input type='hidden' name='" . $formStem . "[text]' value='" . $block->text . "' />";
+            echo $this->partial('single-response.php', array(
+                    'original' => true,
+                    'originalResponse' => $block->text,
+                    'owner' => $blockOwner,
+                    'changeAllowed' => $changeAllowed,
+                    'editableResponse' => $this->exhibitFormText($block),
+                    'hiddenInput' => $hiddenInput
+                )
+            );
+        ?>
+        </div>
         <?php $topLevelResponses = get_db()->getTable('EditorialBlockResponse')->findResponsesForBlock($block); ?>
         <div class='editorial-block-responses'>
             <?php foreach ($topLevelResponses as $response): ?>
@@ -109,7 +109,19 @@ if ($block->exists()) {
         <input type='hidden' name='<?php echo $formStem.'[options][response_ids][]'; ?>' value='<?php echo $responseId; ?>' />
 
         <?php endforeach; ?>
-
+    <?php else: ?>
+        <h4>Start a conversation</h4>
+        <div class='editorial-block-response-info'>
+        <?php
+            $hash = md5(strtolower(trim($blockOwner->email)));
+            $url = "//www.gravatar.com/avatar/$hash";
+        ?>
+            <img class='gravatar' src='<?php echo $url; ?>' />
+            <span class="username"><?php echo $blockOwner->username; ?></span>
+        </div>
+        <?php if ($changeAllowed): ?>
+            <?php echo $this->exhibitFormText($block); ?>
+        <?php endif; ?>
     <?php endif; ?>
 </div>
 
