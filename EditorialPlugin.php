@@ -339,8 +339,8 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
 
         switch (get_class($record)) {
             case 'ExhibitPageBlock':
-                $options = $block->getOptions();
-                $ownerRecord = get_db()->getTable('EditorialBlockOwner')->findByBlock($block);
+                $options = $record->getOptions();
+                $ownerRecord = get_db()->getTable('EditorialBlockOwner')->findByBlock($record);
 
                 if ($user->id == $ownerRecord->owner_id) {
                     return true;
