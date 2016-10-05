@@ -31,98 +31,60 @@ if ($block->exists()) {
 <?php endif; ?>
 
     <div class='editorial-block-response-container original'>
-        <div class='editorial-block-response-info'>
-        <?php
-            $hash = md5(strtolower(trim($blockOwner->email)));
-            $url = "//www.gravatar.com/avatar/$hash";
-        ?>
-            <img class='gravatar' src='<?php echo $url; ?>' />
-            <span class="username"><?php echo $blockOwner->username; ?></span>
-            <span class="original-label">Original response</span>
-            <?php if ($changeAllowed): ?>
-            <a href="#" class="edit-response">(Edit)</a>
-            <a href="#" class="cancel-response-edit">(Cancel)</a>
-            <?php endif; ?>
-        </div>
-        <?php if ($changeAllowed): ?>
-        <div class="editorial-block-response">
-        <?php echo $this->exhibitFormText($block); ?>
-        </div>
-        <?php endif; ?>
-        <div class="original-response">
-            <?php echo $block->text; ?>
-            <input type='hidden' name='<?php echo $formStem; ?>[text]' value='<?php echo $block->text; ?>' />
-        </div>
+    <?php
+        $hiddenInput = "<input type='hidden' name='" . $formStem . "[text]' value='" . $block->text . "' />";
+        echo $this->partial('single-response.php', array(
+                'original' => true,
+                'originalResponse' => $block->text,
+                'owner' => $blockOwner,
+                'changeAllowed' => $changeAllowed,
+                'editableResponse' => $this->exhibitFormText($block),
+                'hiddenInput' => $hiddenInput
+            )
+        );
+    ?>
     </div>
 
     <?php if ($block->exists()): ?>
         <?php $topLevelResponses = get_db()->getTable('EditorialBlockResponse')->findResponsesForBlock($block); ?>
         <div class='editorial-block-responses'>
-            <?php if (count($topLevelResponses) != 0): ?>
-            <h5><?php __('Conversation'); ?></h5>
-            <?php endif; ?>
             <?php foreach ($topLevelResponses as $response): ?>
             <div class='editorial-block-response-container'>
-                <div class='editorial-block-response-info'>
                 <?php
-                    $owner = $response->getOwner();
-                    $hash = md5(strtolower(trim($owner->email)));
-                    $url = "//www.gravatar.com/avatar/$hash";
+                echo $this->partial('single-response.php', array(
+                        'originalResponse' => $response->text,
+                        'owner' => $response->getOwner(),
+                        'changeAllowed' => EditorialPlugin::userHasAccess($response),
+                        'editableResponse' => $this->formTextarea($formStem."[options][edited_responses][{$response->id}]",
+                            $response->text, array('rows' => 8)),
+                    )
+                );
                 ?>
-                    <img class='gravatar' src='<?php echo $url; ?>' />
-                    <span class="username"><?php echo $owner->username; ?></span>
-                    <a href="#" class="edit-response">(Edit)</a>
-                    <a href="#" class="cancel-response-edit">(Cancel)</a>
+                <div class="response-replies">
+                    <?php
+                        $childResponses = $response->getChildResponses();
+                        foreach ($childResponses as $childResponse) :
+                    ?>
+                    <div class='editorial-block-response-container child'>
+                    <?php
+                        echo $this->partial('single-response.php', array(
+                                'originalResponse' => $childResponse->text,
+                                'owner' => $childResponse->getOwner(),
+                                'changeAllowed' => EditorialPlugin::userHasAccess($childResponse),
+                                'editableResponse' => $this->formTextarea($formStem."[options][edited_responses][{$childResponse->id}]", $childResponse->text, array('rows' => 8) )
+                            )
+                        );
+                    ?>
+                    </div>
+                    <?php endforeach; ?>
                 </div>
                 <div>
-                    <div class='editorial-block-response'>
-                        <?php
-                        if (EditorialPlugin::userHasAccess($response)) {
-                            echo $this->formTextarea($block->getFormStem()."[options][edited_responses][{$response->id}]",
-                                                    $response->text, array('rows' => 8));
-                        } else {
-                            echo $response->text;
-                        }
-                        ?>
-                        <?php
-                            $childResponses = $response->getChildResponses();
-                            foreach ($childResponses as $childResponse) :
-                        ?>
-                        <div class='editorial-block-response-container child'>
-                            <div class='editorial-block-response-info'>
-                            <?php
-                                $owner = $childResponse->getOwner();
-                                $hash = md5(strtolower(trim($owner->email)));
-                                $url = "//www.gravatar.com/avatar/$hash";
-                            ?>
-                                <img class='gravatar' src='<?php echo $url; ?>' />
-                                <div><?php echo $owner->username; ?></div>
-                            </div>
-                            <div>
-                                <?php echo snippet($childResponse->text, 0, 100); ?>
-                            </div>
-                            <div>
-                            <?php
-                            if (EditorialPlugin::userHasAccess($childResponse)) {
-                                echo $this->formTextarea($block->getFormStem()."[options][edited_responses][{$childResponse->id}]",
-                                                        $childResponse->text, array('rows' => 8));
-                            } else {
-                                echo $childResponse->text;
-                            }
-                            ?>
-                            </div>
-                        </div>
-                        <?php endforeach; ?>
-                    </div>
-                    <div class="original-response"><?php echo $response->text; ?></div>
-                    <div>
-                        <p class='editorial-block reply-button'>Reply</p>
-                        <div class='editorial-block reply'>
-                        <?php
-                        echo $this->formTextarea($block->getFormStem()."[options][child_responses][{$response->id}]",
-                                '', array('rows' => 8));
-                        ?>
-                        </div>
+                    <p class='editorial-block reply-button'>Reply</p>
+                    <div class='editorial-block reply'>
+                    <?php
+                    echo $this->formTextarea($formStem."[options][child_responses][{$response->id}]",
+                            '', array('rows' => 8));
+                    ?>
                     </div>
                 </div>
             </div>

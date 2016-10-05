@@ -16,8 +16,8 @@
 
         $('#exhibit-page-form').on('click', '.edit-response,.cancel-response-edit', function(e) {
             e.preventDefault();
-            $('.edit-response,.cancel-response-edit').toggle();
-            var currentResponse = $(this).parents('.editorial-block-response-container');
+            var currentResponse = $(this).parents('.editorial-block-response-container').first();
+            currentResponse.find('.edit-response,.cancel-response-edit').toggle();
             currentResponse.find('.original-response').toggle();
             currentResponse.find('.editorial-block-response').toggle();
         });
