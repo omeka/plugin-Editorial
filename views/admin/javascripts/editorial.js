@@ -22,6 +22,14 @@
             currentResponse.find('.editorial-block-response').toggle();
         });
 
+        $('#exhibit-page-form').on('click', '.expand-response,.collapse-response', function(e) {
+            e.preventDefault();
+            var expandCollapse = $(this);
+            expandCollapse.toggle();
+            expandCollapse.siblings('.expand-response,.collapse-response').toggle();
+            expandCollapse.parents('.original-response').toggleClass('preview').toggleClass('full');
+        });
+
         $('.editorial-block.reply-button').click(function() {
             $(this).siblings('.reply').toggle();
         });
