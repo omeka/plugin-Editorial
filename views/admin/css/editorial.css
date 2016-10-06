@@ -1,6 +1,7 @@
 
 .editorial-block-response-container {
     clear: both;
+    margin-bottom: 10px;
 }
 
 .editorial-block-response,
@@ -26,6 +27,10 @@
 
 .editorial-block-response .mceEditor {
     display: block;
+    margin-top: 10px;
+}
+
+.response-replies {
     margin-top: 10px;
 }
 
@@ -88,4 +93,53 @@
 
 .send-emails > div:not(:last-child) {
     margin: 0 0 20px;
+}
+
+a.collapse-response:visited,
+a.expand-response:visited {
+    color: #C76941;
+}
+
+.response-text > *:last-child {
+    margin-bottom: 0;
+}
+
+.original-response.preview {
+    overflow: hidden;
+    position: relative;
+}
+
+.preview .response-text {
+    max-height: 15em;
+    overflow: hidden;
+    position: relative;
+}
+
+.preview .response-text:after {
+    content: "";
+    height: 3em;
+    background-image: linear-gradient(rgba(0,0,0,0), #fbfbf9 100%);
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 10.5em;
+}
+
+.preview .response-text ~ .collapse-response {
+    display: none;
+}
+
+.preview .response-text ~ .expand-response {
+    position: absolute;
+    top: 13.5em;
+    left: 0;
+    right: 0;
+    background-color: #fbfbf9;
+    line-height: 1.5em;
+    height: 1.5em;
+    padding-top: .25em;
+}
+
+.full .response-text {
+    margin-bottom: 20px;
 }

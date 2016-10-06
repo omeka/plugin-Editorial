@@ -18,8 +18,10 @@
     <?php echo $editableResponse; ?>
 </div>
 <?php endif; ?>
-<div class="original-response">
-    <?php echo $originalResponse; ?>
+<div class="original-response preview">
+    <div class="response-text"><?php echo $originalResponse; ?></div>
+    <a href="#" class="expand-response">Read more&hellip;</a>
+    <a href="#" class="collapse-response">Collapse</a>
     <?php if (isset($hiddenInput)): ?>
         <?php echo $hiddenInput; ?>
     <?php endif; ?>
