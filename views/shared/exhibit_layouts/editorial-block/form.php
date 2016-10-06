@@ -31,29 +31,65 @@ if ($block->exists()) {
 <?php endif; ?>
 
 
-
-    <h4><?php echo __('Comment'); ?></h4>
-    
-    
-    <div class='editorial-block-response-info'>
-    <?php
-        $hash = md5(strtolower(trim($blockOwner->email)));
-        $url = "//www.gravatar.com/avatar/$hash";
-    ?>
-        <img class='gravatar' src='<?php echo $url; ?>' />
-        <div><?php echo $blockOwner->username; ?></div>
-    </div>
-    <?php if ($changeAllowed): ?>
-    <?php echo $this->exhibitFormText($block); ?>
-    <?php else: ?>
-    <div>
-    <?php echo $block->text; ?>
-    <input type='hidden' name='<?php echo $formStem; ?>[text]' value='<?php echo $block->text; ?>' />
-    </div>
-    <?php endif; ?>
-    
     <?php if ($block->exists()): ?>
-    <?php $topLevelResponses = get_db()->getTable('EditorialBlockResponse')->findResponsesForBlock($block); ?>
+        <div class='editorial-block-response-container original'>
+        <?php
+            $hiddenInput = "<input type='hidden' name='" . $formStem . "[text]' value='" . $block->text . "' />";
+            echo $this->partial('single-response.php', array(
+                    'original' => true,
+                    'originalResponse' => $block->text,
+                    'owner' => $blockOwner,
+                    'changeAllowed' => $changeAllowed,
+                    'editableResponse' => $this->exhibitFormText($block),
+                    'hiddenInput' => $hiddenInput
+                )
+            );
+        ?>
+        </div>
+        <?php $topLevelResponses = get_db()->getTable('EditorialBlockResponse')->findResponsesForBlock($block); ?>
+        <div class='editorial-block-responses'>
+            <?php foreach ($topLevelResponses as $response): ?>
+            <div class='editorial-block-response-container'>
+                <?php
+                echo $this->partial('single-response.php', array(
+                        'originalResponse' => $response->text,
+                        'owner' => $response->getOwner(),
+                        'changeAllowed' => EditorialPlugin::userHasAccess($response),
+                        'editableResponse' => $this->formTextarea($formStem."[options][edited_responses][{$response->id}]",
+                            $response->text, array('rows' => 8)),
+                    )
+                );
+                ?>
+                <div class="response-replies">
+                    <?php
+                        $childResponses = $response->getChildResponses();
+                        foreach ($childResponses as $childResponse) :
+                    ?>
+                    <div class='editorial-block-response-container child'>
+                    <?php
+                        echo $this->partial('single-response.php', array(
+                                'originalResponse' => $childResponse->text,
+                                'owner' => $childResponse->getOwner(),
+                                'changeAllowed' => EditorialPlugin::userHasAccess($childResponse),
+                                'editableResponse' => $this->formTextarea($formStem."[options][edited_responses][{$childResponse->id}]", $childResponse->text, array('rows' => 8) )
+                            )
+                        );
+                    ?>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+                <div>
+                    <p class='editorial-block reply-button'>Reply</p>
+                    <div class='editorial-block reply'>
+                    <?php
+                    echo $this->formTextarea($formStem."[options][child_responses][{$response->id}]",
+                            '', array('rows' => 8));
+                    ?>
+                    </div>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
         <div class='editorial-block-response-new'>
             <?php
 
@@ -65,101 +101,36 @@ if ($block->exists()) {
                     );
             ?>
         </div>
-    <?php
-        // block options are all reset from the data in the form,
-        // so spoof in the existing response_ids data
-        foreach ($options['response_ids'] as $responseId):
-    ?>
-    <input type='hidden' name='<?php echo $formStem.'[options][response_ids][]'; ?>' value='<?php echo $responseId; ?>' />
-    
-    <?php endforeach; ?>
-    
-    <div class='editorial-block-responses'>
-        <?php if (count($topLevelResponses) != 0): ?>
-        <h5><?php __('Conversation'); ?></h5>
-        <?php endif; ?>
-        <?php foreach ($topLevelResponses as $response): ?>
+        <?php
+            // block options are all reset from the data in the form,
+            // so spoof in the existing response_ids data
+            foreach ($options['response_ids'] as $responseId):
+        ?>
+        <input type='hidden' name='<?php echo $formStem.'[options][response_ids][]'; ?>' value='<?php echo $responseId; ?>' />
 
-        <div class='editorial-block-response-container'>
-            <div>
-                <div class="drawer closed" role="button" title="<?php echo __('Expand/Collapse'); ?>"></div>
-
-                <div class='editorial-block-response-info'>
-                <?php
-                    $owner = $response->getOwner();
-                    $hash = md5(strtolower(trim($owner->email)));
-                    $url = "//www.gravatar.com/avatar/$hash";
-                ?>
-                    <img class='gravatar' src='<?php echo $url; ?>' />
-                    <div><?php echo $owner->username; ?></div>
-                </div>
-                <div>
-                    <?php echo snippet($response->text, 0, 100); ?>
-                </div>
-            </div>
-            <div class='editorial-block-response'>
-            <?php 
-if (EditorialPlugin::userHasAccess($response)) {
-    echo $this->formTextarea($block->getFormStem()."[options][edited_responses][{$response->id}]",
-                            $response->text, array('rows' => 8));
-} else {
-    echo $response->text;
-}
-            ?>
-                <?php $childResponses = $response->getChildResponses();
-                    foreach ($childResponses as $childResponse) :
-                ?>
-                <div class='editorial-block-response-container child'>
-                    <div class='editorial-block-response-info'>
-                    <?php
-                        $owner = $childResponse->getOwner();
-                        $hash = md5(strtolower(trim($owner->email)));
-                        $url = "//www.gravatar.com/avatar/$hash";
-                    ?>
-                        <img class='gravatar' src='<?php echo $url; ?>' />
-                        <div><?php echo $owner->username; ?></div>
-                    </div>
-                    <div>
-                        <?php echo snippet($childResponse->text, 0, 100); ?>
-                    </div>
-                    <div>
-            <?php
-if (EditorialPlugin::userHasAccess($childResponse)) {
-    echo $this->formTextarea($block->getFormStem()."[options][edited_responses][{$childResponse->id}]",
-                            $childResponse->text, array('rows' => 8));
-} else {
-    echo $childResponse->text;
-}
-            ?>
-                    </div>
-                </div>
-                <?php endforeach; ?>
-
-                <div>
-                    <p class='editorial-block reply-button'>Reply</p>
-                    <div class='editorial-block reply'>
-                    <?php
-                    echo $this->formTextarea($block->getFormStem()."[options][child_responses][{$response->id}]",
-                            '', array('rows' => 8));
-                    ?>
-                    </div>
-                </div>
-            </div>
-
-        </div>
         <?php endforeach; ?>
-
-
-    </div>
+    <?php else: ?>
+        <h4>Start a conversation</h4>
+        <div class='editorial-block-response-info'>
+        <?php
+            $hash = md5(strtolower(trim($blockOwner->email)));
+            $url = "//www.gravatar.com/avatar/$hash";
+        ?>
+            <img class='gravatar' src='<?php echo $url; ?>' />
+            <span class="username"><?php echo $blockOwner->username; ?></span>
+        </div>
+        <?php if ($changeAllowed): ?>
+            <?php echo $this->exhibitFormText($block); ?>
+        <?php endif; ?>
     <?php endif; ?>
 </div>
 
-<div class='layout-options'>
+<div class='editorial layout-options'>
     <div class="block-header">
         <h4><?php echo __('Options'); ?></h4>
         <div class="drawer"></div>
     </div>
-    
+
     <?php if ($block->exists()): ?>
     <input type='hidden' name='<?php echo $formStem; ?>[options][old_id]' value='<?php echo $block->id; ?>' />
     <?php endif; ?>
@@ -215,7 +186,7 @@ if (EditorialPlugin::userHasAccess($childResponse)) {
         </div>
     </div>
     <div class='users-select'>
-        <?php 
+        <?php
             if ($changeAllowed) {
                 unset($usersForSelect[$blockOwner->id]);
                 unset($usersForSelect[$currentUser->id]);

@@ -13,11 +13,19 @@
                 deleteButton.remove();
             }
         });
-        
+
+        $('#exhibit-page-form').on('click', '.edit-response,.cancel-response-edit', function(e) {
+            e.preventDefault();
+            var currentResponse = $(this).parents('.editorial-block-response-container').first();
+            currentResponse.find('.edit-response,.cancel-response-edit').toggle();
+            currentResponse.find('.original-response').toggle();
+            currentResponse.find('.editorial-block-response').toggle();
+        });
+
         $('.editorial-block.reply-button').click(function() {
             $(this).siblings('.reply').toggle();
         });
-        
+
         $('#exhibit-page-form').on('change', '.users-select select', function() {
             var target = $(this);
             var emailSelect = target.parents('.layout-options').find('.email-select');
@@ -26,7 +34,7 @@
                     $(this).remove();
                 }
             });
-            
+
             var selectedUsers = target.find('option:selected');
             selectedUsers.each(function() {
                 var userOption = $(this).clone();
@@ -34,7 +42,7 @@
             });
             emailSelect.attr('size', selectedUsers.length + 2);
         });
-        
+
         $('#exhibit-page-form').on('click', '.email-checkbox', function() {
             var emailSelect = $(this).parents('.layout-options').find('.email-select');
             if (this.checked) {
@@ -43,7 +51,7 @@
                 emailSelect.find('option').prop('selected', false);
             }
         });
-        
+
         $('#exhibit-page-form').on('change', '.email-select', function() {
             var emailCheckbox = $(this).parents('.layout-options').find('.email-checkbox');
             var hasSelected = false;
