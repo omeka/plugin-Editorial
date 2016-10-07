@@ -40,6 +40,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
               `parent_id` int(10) unsigned NULL,
               `owner_id` int(10) unsigned NOT NULL,
               `added` TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00',
+              `modified` TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00',
               PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
         ";
@@ -79,20 +80,24 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $newVersion = $args['new_version'];
 
         $db = get_db();
-        if (version_compare($oldVersion, '3.3.3', '<')) {
-            
+        if (version_compare($oldVersion, '0.2.0-alpha', '<')) {
             $sql = "
             RENAME TABLE `$db->EditorialBlockInfo` TO `$db->EditorialBlockOwner` ;
             ";
-            
             $db->query($sql);
-            
+
             $sql = "
             ALTER TABLE `$db->EditorialBlockInfo` ADD COLUMN `added` TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00'
             ";
             $db->query($sql);
+
             $sql = "
             ALTER TABLE `$db->EditorialBlockInfo` ADD COLUMN `modified` TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00'
+            ";
+            $db->query($sql);
+            
+            $sql = "
+            ALTER TABLE `$db->EditorialBlockResponse` ADD COLUMN `modified` TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00'
             ";
             $db->query($sql);
         }
