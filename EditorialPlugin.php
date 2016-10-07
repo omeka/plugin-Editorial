@@ -50,10 +50,12 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         // possibility to inspect the element and change ownership
 
         $sql = "
-            CREATE TABLE IF NOT EXISTS `$db->EditorialBlockOwner` (
+            CREATE TABLE IF NOT EXISTS `$db->EditorialBlockInfo` (
               `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
               `block_id` int(10) unsigned NOT NULL,
               `owner_id` int(10) unsigned NOT NULL,
+              `added` TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00',
+              `modified` TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00',
               PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
         ";
@@ -71,6 +73,31 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $db->query($sql);
     }
 
+    public function hookUpgrade($args)
+    {
+        $oldVersion = $args['old_version'];
+        $newVersion = $args['new_version'];
+
+        $db = get_db();
+        if (version_compare($oldVersion, '3.3.3', '<')) {
+            
+            $sql = "
+            RENAME TABLE `$db->EditorialBlockInfo` TO `$db->EditorialBlockOwner` ;
+            ";
+            
+            $db->query($sql);
+            
+            $sql = "
+            ALTER TABLE `$db->EditorialBlockInfo` ADD COLUMN `added` TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00'
+            ";
+            $db->query($sql);
+            $sql = "
+            ALTER TABLE `$db->EditorialBlockInfo` ADD COLUMN `modified` TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00'
+            ";
+            $db->query($sql);
+        }
+    }
+    
     public function hookUninstall()
     {
         $db = $this->_db;
@@ -89,7 +116,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             $user->save();
         }
 
-        $sql = "DROP TABLE IF EXISTS `$db->EditorialBlockOwner`";
+        $sql = "DROP TABLE IF EXISTS `$db->EditorialBlockInfo`";
         $db->query($sql);
 
         $sql = "DROP TABLE IF EXISTS `$db->EditorialBlockResponse`";
@@ -134,9 +161,9 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             }
         }
 
-        $ownerRecord = $this->_db->getTable('EditorialBlockOwner')->findByBlock($block);
-        if ($ownerRecord) {
-            $ownerRecord->delete();
+        $infoRecord = $this->_db->getTable('EditorialBlockInfo')->findByBlock($block);
+        if ($infoRecord) {
+            $infoRecord->delete();
         }
     }
 
@@ -201,9 +228,9 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $options = $block->getOptions();
 
         if (isset($options['old_id'])) {
-            $blockOwnerRecord = $this->_db->getTable('EditorialBlockOwner')->findByBlock($options['old_id']);
-            $blockOwnerRecord->block_id = $block->id;
-            $blockOwnerRecord->save();
+            $blockInfoRecord = $this->_db->getTable('EditorialBlockInfo')->findByBlock($options['old_id']);
+            $blockInfoRecord->block_id = $block->id;
+            $blockInfoRecord->save();
 
             $accessRecords = $this->_db->getTable('EditorialExhibitAccess')->findBy(array('block_id' => $options['old_id']));
             foreach ($accessRecords as $accessRecord) {
@@ -211,14 +238,15 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
                 $accessRecord->save();
             }
         } else {
-            $blockOwnerRecord = $this->_db->getTable('EditorialBlockOwner')->findByBlock($block->id);
-            if (!$blockOwnerRecord) {
-                $blockOwner = new EditorialBlockOwner();
-                $blockOwner->block_id = $block->id;
+            $blockInfoRecord = $this->_db->getTable('EditorialBlockInfo')->findByBlock($block->id);
+            if (!$blockInfoRecord) {
+                $blockInfoRecord = new EditorialBlockInfo();
+                $blockInfoRecord->block_id = $block->id;
                 $owner = current_user();
-                $blockOwner->owner_id = $owner->id;
-                $blockOwner->save();
+                $blockInfoRecord->owner_id = $owner->id;
+                $blockInfoRecord->save();
             }
+            $blockInfoRecord->save();
         }
 
         $this->adjustPermissions($block);
@@ -340,9 +368,9 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         switch (get_class($record)) {
             case 'ExhibitPageBlock':
                 $options = $record->getOptions();
-                $ownerRecord = get_db()->getTable('EditorialBlockOwner')->findByBlock($record);
+                $infoRecord = get_db()->getTable('EditorialBlockInfo')->findByBlock($record);
 
-                if ($user->id == $ownerRecord->owner_id) {
+                if ($user->id == $infoRecord->owner_id) {
                     return true;
                 }
 

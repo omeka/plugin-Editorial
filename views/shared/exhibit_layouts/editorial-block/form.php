@@ -11,7 +11,7 @@ unset($usersForSelect['']);
 $changeAllowed = false;
 
 if ($block->exists()) {
-    $blockOwner = get_db()->getTable('EditorialBlockOwner')->findOwnerByBlock($block);
+    $blockOwner = get_db()->getTable('EditorialBlockInfo')->findOwnerByBlock($block);
     if ($currentUser->role == 'admin'
         || $currentUser->role == 'super'
         || $currentUser->id == $blockOwner->id

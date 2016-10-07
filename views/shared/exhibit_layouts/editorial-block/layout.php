@@ -12,8 +12,8 @@ $topLevelResponses = get_db()->getTable('EditorialBlockResponse')->findResponses
     <div class='editorial-block editorial-comment'>
         <div class='editorial-block-response-info'>
         <?php
-            $ownerRecord = get_db()->getTable('EditorialBlockOwner')->findByBlock($block);
-            $owner = $ownerRecord->getOwner();
+            $infoRecord = get_db()->getTable('EditorialBlockInfo')->findByBlock($block);
+            $owner = $infoRecord->getOwner();
             $hash = md5(strtolower(trim($owner->email)));
             $url = "//www.gravatar.com/avatar/$hash";
         ?>
