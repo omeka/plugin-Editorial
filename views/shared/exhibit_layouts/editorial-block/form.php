@@ -34,16 +34,18 @@ if ($block->exists()) {
     <?php if ($block->exists()): ?>
         <div class='editorial-block-response-container original'>
         <?php
-            $hiddenInput = "<input type='hidden' name='" . $formStem . "[text]' value='" . $block->text . "' />";
-            echo $this->partial('single-response.php', array(
+            $partialOptions =  array(
                     'original' => true,
                     'originalResponse' => $block->text,
                     'owner' => $blockOwner,
                     'changeAllowed' => $changeAllowed,
                     'editableResponse' => $this->exhibitFormText($block),
-                    'hiddenInput' => $hiddenInput
-                )
             );
+            if (! $changeAllowed) {
+                $hiddenInput = "<input type='hidden' name='" . $formStem . "[text]' value='" . $block->text . "' />";
+                $partialOptions['hiddenInput'] = $hiddenInput;
+            }
+            echo $this->partial('single-response.php', $partialOptions);
         ?>
         </div>
         <?php $topLevelResponses = get_db()->getTable('EditorialBlockResponse')->findResponsesForBlock($block); ?>
