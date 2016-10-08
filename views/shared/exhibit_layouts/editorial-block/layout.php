@@ -16,7 +16,7 @@ $infoRecord = get_db()->getTable('EditorialBlockInfo')->findByBlock($block);
             <?php
             $ownerRecord = $infoRecord->getOwner();
             echo $this->partial('single-response.php', array(
-                'owner' => $ownerRecord->getOwner(),
+                'owner' => $ownerRecord,
                 'responseText' => $block->text
                 )
             );
@@ -53,4 +53,3 @@ $infoRecord = get_db()->getTable('EditorialBlockInfo')->findByBlock($block);
         <a href="<?php echo url('admin/exhibits/edit-page/' . $block->page_id); ?>" class="button"><?php echo __('Reply in the admin area'); ?></a>
     </div>
 </div>
-<?php endif; ?>
