@@ -17,7 +17,8 @@ $infoRecord = get_db()->getTable('EditorialBlockInfo')->findByBlock($block);
             $ownerRecord = $infoRecord->getOwner();
             echo $this->partial('single-response.php', array(
                 'owner' => $ownerRecord,
-                'responseText' => $block->text
+                'responseText' => $block->text,
+                'date' => metadata($infoRecord, 'added'),
                 )
             );
             ?>
@@ -29,7 +30,7 @@ $infoRecord = get_db()->getTable('EditorialBlockInfo')->findByBlock($block);
             echo $this->partial('single-response.php', array(
                 'owner' => $response->getOwner(),
                 'responseText' => $response->text,
-                'date' => $response->added
+                'date' => metadata($response, 'added'),
                 )
             );
             ?>
