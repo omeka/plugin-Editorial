@@ -1,64 +1,56 @@
 <?php
 
-if (EditorialPlugin::userHasAccess($block)) :
-$topLevelResponses = get_db()->getTable('EditorialBlockResponse')->findResponsesForBlock($block);
+if (EditorialPlugin::userHasAccess($block)) {
+    $topLevelResponses = get_db()->getTable('EditorialBlockResponse')->findResponsesForBlock($block);
+}
 $infoRecord = get_db()->getTable('EditorialBlockInfo')->findByBlock($block);
 ?>
 
 <div class='editorial-block public'>
     <div>
-        <div class="drawer closed" role="button" title="<?php echo __('Expand/Collapse'); ?>"></div>
         <h3><?php echo __('Internal Comments'); ?></h3>
+        <div class="drawer opened" role="button" title="<?php echo __('Expand/Collapse'); ?>"></div>
     </div>
-    <div class='editorial-block editorial-comment'>
-        <div class='editorial-block-response-info'>
-        <?php
-            $owner = $infoRecord->getOwner();
-            $hash = md5(strtolower(trim($owner->email)));
-            $url = "//www.gravatar.com/avatar/$hash";
-        ?>
-            <img class='gravatar' src='<?php echo $url; ?>' />
-            <div><?php echo $owner->username; ?></div>
+    <div class='editorial-block-responses' style="display: block">
+        <div class='editorial-block editorial-comment original'>
+            <?php
+            $ownerRecord = $infoRecord->getOwner();
+            echo $this->partial('single-response.php', array(
+                'owner' => $ownerRecord->getOwner(),
+                'responseText' => $block->text
+                )
+            );
+            ?>
         </div>
-        <?php echo $block->text; ?>
-    </div>
-    <div class='editorial-block-responses'>
-        <h4>Conversation</h5>
-        <?php foreach ($topLevelResponses as $response): ?>
 
+        <?php foreach ($topLevelResponses as $response): ?>
         <div class='editorial-block-response-container'>
-                <div class='editorial-block-response-info'>
-                <?php
-                    $owner = $response->getOwner();
-                    $hash = md5(strtolower(trim($owner->email)));
-                    $url = "//www.gravatar.com/avatar/$hash";
-                ?>
-                    <img class='gravatar' src='<?php echo $url; ?>' />
-                    <div><?php echo $owner->username; ?></div>
-                </div>
-            <div class='editorial-block-response'>
-            <?php echo $response->text; ?>
-                <?php $childResponses = $response->getChildResponses();
-                    foreach ($childResponses as $childResponse) :
-                ?>
+            <?php
+            echo $this->partial('single-response.php', array(
+                'owner' => $response->getOwner(),
+                'responseText' => $response->text,
+                'date' => $response->added
+                )
+            );
+            ?>
+            <div class='response-replies'>
+                <?php $childResponses = $response->getChildResponses(); ?>
+                <?php foreach ($childResponses as $childResponse): ?>
                 <div class='editorial-block-response-container child'>
-                    <div class='editorial-block-response-info'>
                     <?php
-                        $owner = $childResponse->getOwner();
-                        $hash = md5(strtolower(trim($owner->email)));
-                        $url = "//www.gravatar.com/avatar/$hash";
+                    echo $this->partial('single-response.php', array(
+                        'owner' => $childResponse->getOwner(),
+                        'responseText' => $childResponse->text,
+                        'date' => $childResponse->added
+                        )
+                    );
                     ?>
-                        <img class='gravatar' src='<?php echo $url; ?>' />
-                        <div><?php echo $owner->username; ?></div>
-                    </div>
-                    <div>
-                    <?php echo $childResponse->text; ?>
-                    </div>
                 </div>
                 <?php endforeach; ?>
             </div>
         </div>
         <?php endforeach; ?>
+        <a href="<?php echo url('admin/exhibits/edit-page/' . $block->page_id); ?>" class="button"><?php echo __('Reply in the admin area'); ?></a>
     </div>
 </div>
 <?php endif; ?>

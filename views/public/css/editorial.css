@@ -1,5 +1,48 @@
+.editorial-block {
+    position: relative;
+    margin-bottom: 1.5em;
+}
+
+.editorial-block img.gravatar {
+    display: inline-block;
+    height: 1.5em;
+    width: auto;
+    vertical-align: middle;
+    margin-right: .25em;
+}
+
+.editorial-block span.username,
+.editorial-block span.date {
+    display: inline-block;
+    font-size: .875em;
+}
+
+.editorial-block span.username {
+    font-weight: bold;
+}
+
 .editorial-block .drawer {
     cursor: pointer;
+}
+
+.editorial-block .response-text {
+    padding-left: 2em;
+}
+
+.editorial-block .response-text > *:first-child {
+    margin-top: 0;
+}
+
+.editoria;-block .response-text > *:last-child {
+    margin-bottom: 0;
+}
+
+.editorial-block .drawer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    text-align: right;
 }
 
 .editorial-block .drawer::after {
@@ -7,10 +50,9 @@
     display: inline-block;
     font-family: "FontAwesome";
     font-size: 16px;
-    height: 20px;
-    width: 20px;
+    height: 1.5em;
+    width: 1.5em;
     text-indent: 0;
-    float: left;
     text-align: center;
 }
 
@@ -27,16 +69,18 @@
 }
 
 .editorial-block-response-info {
-    float: left;
-    margin-right: 10px;
+    width: 100%;
 }
 
 .editorial-block-response-container {
     clear: both;
-    padding-top: 10px;
+    margin-bottom: 1.5em;
 }
 
+.child.editorial-block-response-container {
+    margin-left: 2em;
+}
 
-.editorial-block-response-container {
-    margin-left: 25px;
+.editorial-block .response-replies {
+    margin-top: 1.5em;
 }
