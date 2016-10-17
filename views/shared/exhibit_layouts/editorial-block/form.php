@@ -42,6 +42,7 @@ if ($block->exists()) {
                     'originalResponse' => $block->text,
                     'owner' => $blockOwner,
                     'changeAllowed' => $changeAllowed,
+                    'infoRecord' => $infoRecord,
                     'editableResponse' => $this->exhibitFormText($block),
             );
             if (! $changeAllowed) {
@@ -58,6 +59,7 @@ if ($block->exists()) {
                 <?php
                 echo $this->partial('single-response.php', array(
                         'originalResponse' => $response->text,
+                        'response' => $response,
                         'owner' => $response->getOwner(),
                         'changeAllowed' => EditorialPlugin::userHasAccess($response),
                         'editableResponse' => $this->formTextarea($formStem."[options][edited_responses][{$response->id}]",
@@ -74,6 +76,7 @@ if ($block->exists()) {
                     <?php
                         echo $this->partial('single-response.php', array(
                                 'originalResponse' => $childResponse->text,
+                                'response' => $childResponse,
                                 'owner' => $childResponse->getOwner(),
                                 'changeAllowed' => EditorialPlugin::userHasAccess($childResponse),
                                 'editableResponse' => $this->formTextarea($formStem."[options][edited_responses][{$childResponse->id}]", $childResponse->text, array('rows' => 8) )
