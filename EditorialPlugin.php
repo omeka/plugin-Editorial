@@ -234,6 +234,16 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
 
         if (isset($options['old_id'])) {
             $blockInfoRecord = $this->_db->getTable('EditorialBlockInfo')->findByBlock($options['old_id']);
+            
+            // if no infoRecord, usually means someone has saved the page while user was busy editing
+            // nothing to do but to give a warning
+            if (! $blockInfoRecord) {
+                $flashMessenger = Zend_Controller_Action_HelperBroker::getStaticHelper('FlashMessenger');
+                $flashMessenger->clearMessages();
+                $flashMessenger->addMessage(__("An error occurred when saving the comments. Usually this is caused by someone else saving the page while you were editing it."), 'error');
+                return;
+            }
+            
             $blockInfoRecord->block_id = $block->id;
             $blockInfoRecord->save();
 
