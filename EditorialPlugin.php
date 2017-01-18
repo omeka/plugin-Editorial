@@ -55,8 +55,6 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
               `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
               `block_id` int(10) unsigned NOT NULL,
               `owner_id` int(10) unsigned NOT NULL,
-              `added` TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00',
-              `modified` TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00',
               PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
         ";
@@ -74,35 +72,6 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $db->query($sql);
     }
 
-    public function hookUpgrade($args)
-    {
-        $oldVersion = $args['old_version'];
-        $newVersion = $args['new_version'];
-
-        $db = get_db();
-        if (version_compare($oldVersion, '0.2.0-alpha', '<')) {
-            $sql = "
-            RENAME TABLE `$db->EditorialBlockInfo` TO `$db->EditorialBlockOwner` ;
-            ";
-            $db->query($sql);
-
-            $sql = "
-            ALTER TABLE `$db->EditorialBlockInfo` ADD COLUMN `added` TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00'
-            ";
-            $db->query($sql);
-
-            $sql = "
-            ALTER TABLE `$db->EditorialBlockInfo` ADD COLUMN `modified` TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00'
-            ";
-            $db->query($sql);
-            
-            $sql = "
-            ALTER TABLE `$db->EditorialBlockResponse` ADD COLUMN `modified` TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00'
-            ";
-            $db->query($sql);
-        }
-    }
-    
     public function hookUninstall()
     {
         $db = $this->_db;
@@ -234,16 +203,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
 
         if (isset($options['old_id'])) {
             $blockInfoRecord = $this->_db->getTable('EditorialBlockInfo')->findByBlock($options['old_id']);
-            
-            // if no infoRecord, usually means someone has saved the page while user was busy editing
-            // nothing to do but to give a warning
-            if (! $blockInfoRecord) {
-                $flashMessenger = Zend_Controller_Action_HelperBroker::getStaticHelper('FlashMessenger');
-                $flashMessenger->clearMessages();
-                $flashMessenger->addMessage(__("An error occurred when saving the comments. Usually this is caused by someone else saving the page while you were editing it."), 'error');
-                return;
-            }
-            
+
             $blockInfoRecord->block_id = $block->id;
             $blockInfoRecord->save();
 

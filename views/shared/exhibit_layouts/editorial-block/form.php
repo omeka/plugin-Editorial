@@ -3,7 +3,6 @@ $formStem = $block->getFormStem();
 $options = $block->getOptions();
 $usersForSelect = get_table_options('User');
 $currentUser = current_user();
-
 unset($usersForSelect['']);
 
 // allow some users to change who's allowed access
