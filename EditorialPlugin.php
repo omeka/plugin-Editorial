@@ -90,6 +90,11 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             $user->save();
         }
 
+        $editorialBlocks = $db->getTable('ExhibitPageBlock')->findBy(array('layout' => 'editorial-block'));
+        foreach ($editorialBlocks as $editorialBlock) {
+            $editorialBlock->delete();
+        }
+
         $sql = "DROP TABLE IF EXISTS `$db->EditorialBlockInfo`";
         $db->query($sql);
 
@@ -223,7 +228,6 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             }
             $blockInfoRecord->save();
         }
-
         $this->adjustPermissions($block);
 
         if ($options['send_emails']) {
