@@ -43,6 +43,7 @@ if ($block->exists()) {
                     'changeAllowed' => $changeAllowed,
                     'infoRecord' => $infoRecord,
                     'editableResponse' => $this->exhibitFormText($block),
+                    'block' => $block,
             );
             if (! $changeAllowed) {
                 $hiddenInput = "<input type='hidden' name='" . $formStem . "[text]' value='" . $block->text . "' />";

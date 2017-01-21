@@ -55,6 +55,8 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
               `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
               `block_id` int(10) unsigned NOT NULL,
               `owner_id` int(10) unsigned NOT NULL,
+              `added` TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00',
+              `modified` TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00',
               PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
         ";
