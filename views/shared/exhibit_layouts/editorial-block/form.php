@@ -175,16 +175,11 @@ if ($block->exists()) {
                 }
             }
             echo $this->formLabel($formStem.'[options][email_recipients]', __('Select Recipients'));
-            if (empty($recipientsArray)) {
-                echo '<p>'.__('All the users you give access to below will receive an email.').'</p>';
-                echo '<p>'.__('After users have been given access, you can select them here.').'</p>';
-            } else {
-                echo $this->formSelect($formStem.'[options][email_recipients]',
-                                     array(),
-                                     array('class' => 'email-select',  'multiple' => true, 'size' => count($recipientsArray)),
-                                     $recipientsArray
-                );
-            }
+            echo $this->formSelect($formStem.'[options][email_recipients]',
+                                 array(),
+                                 array('class' => 'email-select',  'multiple' => true, 'size' => count($recipientsArray)),
+                                 $recipientsArray
+            );
             ?>
         </div>
         <div>
