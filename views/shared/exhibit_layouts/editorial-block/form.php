@@ -195,25 +195,23 @@ if ($block->exists()) {
         ?>
         </div>
     </div>
-    <?php if (! empty($usersForSelect)): ?>
+    <?php if (! empty($usersForSelect) && $changeAllowed): ?>
     <div class='users-select'>
         <?php
-            if ($changeAllowed) {
-                unset($usersForSelect[$blockOwner->id]);
-                unset($usersForSelect[$currentUser->id]);
-                echo $this->formLabel($formStem.'[options][allowed_users]', __('Grant Access To:'));
-                echo $this->formSelect($formStem.'[options][allowed_users]',
-                                     @$options['allowed_users'],
-                                     array('multiple' => true, 'size' => 10),
-                                     $usersForSelect
-                );
-            } else {
-                foreach ($options['allowed_users'] as $allowedUserId) {
-                    echo "<input type='hidden' name='{$formStem}[options][allowed_users][]' value='$allowedUserId' />";
-                }
-            }
+            unset($usersForSelect[$blockOwner->id]);
+            unset($usersForSelect[$currentUser->id]);
+            echo $this->formLabel($formStem.'[options][allowed_users]', __('Grant Access To:'));
+            echo $this->formSelect($formStem.'[options][allowed_users]',
+                                 @$options['allowed_users'],
+                                 array('multiple' => true, 'size' => 10),
+                                 $usersForSelect
+            );
         ?>
 
     </div>
+    <?php else: ?>
+        <?php foreach ($options['allowed_users'] as $allowedUserId): ?>
+            <input type='hidden' name='<?php echo $formStem; ?>[options][allowed_users][]' value='<?php echo $allowedUserId; ?>' />
+        <?php endforeach; ?>
     <?php endif; ?>
 </div>
