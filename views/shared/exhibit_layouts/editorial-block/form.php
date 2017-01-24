@@ -3,7 +3,7 @@ $formStem = $block->getFormStem();
 $options = $block->getOptions();
 $usersForSelect = array();
 $currentUser = current_user();
-unset($usersForSelect['']);
+
 
 // allow some users to change who's allowed access
 
@@ -20,6 +20,7 @@ if ($block->exists()) {
     ) {
         $changeAllowed = true;
         $usersForSelect = get_table_options('User');
+        unset($usersForSelect['']);
     }
 } else {
     $blockOwner = $currentUser;
