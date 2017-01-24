@@ -1,7 +1,8 @@
 <?php
 $formStem = $block->getFormStem();
 $options = $block->getOptions();
-$usersForSelect = array();
+$usersForSelect = get_table_options('User');
+unset($usersForSelect['']);
 $currentUser = current_user();
 
 
@@ -19,8 +20,6 @@ if ($block->exists()) {
         || $currentUser->id == $blockOwner->id
     ) {
         $changeAllowed = true;
-        $usersForSelect = get_table_options('User');
-        unset($usersForSelect['']);
     }
 } else {
     $blockOwner = $currentUser;
