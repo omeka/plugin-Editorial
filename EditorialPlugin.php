@@ -176,8 +176,10 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         if (isset($options['edited_responses'])) {
             foreach ($options['edited_responses'] as $responseId => $responseData) {
                 $response = $responseTable->find($responseId);
-                $response->text = $responseData;
-                $response->save();
+                if ($response) {
+                    $response->text = $responseData;
+                    $response->save();
+                }
             }
         }
 
