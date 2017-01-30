@@ -1,11 +1,9 @@
+<?php if (EditorialPlugin::userHasAccess($block)): ?>
+
 <?php
-
-if (EditorialPlugin::userHasAccess($block)) {
     $topLevelResponses = get_db()->getTable('EditorialBlockResponse')->findResponsesForBlock($block);
-}
-$infoRecord = get_db()->getTable('EditorialBlockInfo')->findByBlock($block);
+    $infoRecord = get_db()->getTable('EditorialBlockInfo')->findByBlock($block);
 ?>
-
 <div class='editorial-block public'>
     <div>
         <h3><?php echo __('Internal Comments'); ?></h3>
@@ -54,3 +52,5 @@ $infoRecord = get_db()->getTable('EditorialBlockInfo')->findByBlock($block);
         <a href="<?php echo url('admin/exhibits/edit-page/' . $block->page_id); ?>" class="button"><?php echo __('Reply in the admin area'); ?></a>
     </div>
 </div>
+<?php endif; ?>
+
