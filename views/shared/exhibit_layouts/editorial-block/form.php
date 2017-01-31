@@ -141,7 +141,7 @@ if ($block->exists()) {
     </div>
 
     <?php if ($block->exists()): ?>
-    <input type='hidden' name='<?php echo $formStem; ?>[options][old_id]' value='<?php echo $block->id; ?>' />
+    <input type='hidden' class='old-id' name='<?php echo $formStem; ?>[options][old_id]' value='<?php echo $block->id; ?>' />
     <?php endif; ?>
 
     <div class='send-emails'>

@@ -207,12 +207,19 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         if ($block->layout !== 'editorial-block') {
             return;
         }
-
+        $insert = $args['insert'];
         $options = $block->getOptions();
 
-        if (isset($options['old_id'])) {
+        if ($insert) {
+debug('inserting');
+            $blockInfoRecord = new EditorialBlockInfo();
+            $blockInfoRecord->block_id = $block->id;
+            $owner = current_user();
+            $blockInfoRecord->owner_id = $owner->id;
+            $blockInfoRecord->save();
+        } else if (isset($options['old_id'])) {
+debug('updating');
             $blockInfoRecord = $this->_db->getTable('EditorialBlockInfo')->findByBlock($options['old_id']);
-
             $blockInfoRecord->block_id = $block->id;
             $blockInfoRecord->save();
 
@@ -221,19 +228,8 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
                 $accessRecord->block_id = $block->id;
                 $accessRecord->save();
             }
-        } else {
-            $blockInfoRecord = $this->_db->getTable('EditorialBlockInfo')->findByBlock($block->id);
-            if (!$blockInfoRecord) {
-                $blockInfoRecord = new EditorialBlockInfo();
-                $blockInfoRecord->block_id = $block->id;
-                $owner = current_user();
-                $blockInfoRecord->owner_id = $owner->id;
-                $blockInfoRecord->save();
-            }
-            $blockInfoRecord->save();
         }
         $this->adjustPermissions($block);
-
         if ($options['send_emails']) {
             $this->sendEmails($block);
         }
@@ -291,7 +287,6 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $db = $this->_db;
         $userTable = $db->getTable('User');
         $accessTable = $db->getTable('EditorialExhibitAccess');
-
         if (empty($options['allowed_users'])) {
             $users = array();
         } else {
@@ -313,11 +308,11 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
                 $accessRecord = new EditorialExhibitAccess();
                 $accessRecord->user_id = $user->id;
                 $accessRecord->exhibit_id = $exhibit->id;
+
                 $accessRecord->block_id = $block->id;
                 $accessRecord->save();
             }
         }
-
         //clean out users who have had access revoked
         $select = $accessTable->getSelect();
         $select->where('exhibit_id = ?', $exhibit->id);
@@ -325,7 +320,6 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         if (!empty($options['allowed_users'])) {
             $select->where('user_id NOT IN (?)', $options['allowed_users']);
         }
-
         $oldAccessRecords = $accessTable->fetchObjects($select);
         foreach ($oldAccessRecords as $oldAccessRecord) {
             $oldAccessRecord->delete();
