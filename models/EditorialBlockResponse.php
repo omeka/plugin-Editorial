@@ -15,7 +15,6 @@ class EditorialBlockResponse extends Omeka_Record_AbstractRecord
     protected function _initializeMixins()
     {
         $this->_mixins[] = new Mixin_Timestamp($this);
-        $this->_mixins[] = new Mixin_Owner($this);
     }
 
     public function getOwner()
