@@ -7,6 +7,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             'uninstall',
             'deactivate',
             'after_save_exhibit_page_block',
+            'after_save_exhibit_page',
             'before_save_exhibit_page_block',
             'after_delete_exhibit_page_block',
             'admin_head',
@@ -147,7 +148,14 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             $infoRecord->delete();
         }
     }
-
+    
+    /**
+     * Save responses to a block
+     * 
+     * IDs are stored in the block's options
+     * @param unknown_type $args
+     */
+    
     public function hookBeforeSaveExhibitPageBlock($args)
     {
         $block = $args['record'];
@@ -165,6 +173,9 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
                 if (!empty($responseData)) {
                     $response = new EditorialBlockResponse();
                     $response->text = $responseData;
+                    if (! $response->owner_id) {
+                        $response->owner_id = current_user()->id;
+                    }
                     $response->save();
                     $responseIds[] = $response->id;
                 }
@@ -200,6 +211,52 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $block->setOptions($options);
     }
 
+    public function hookAfterSaveExhibitPage($args)
+    {
+        $page = $args['record'];
+        $blocks = $page->getPageBlocks();
+        $editorialBlockInfoTable = $this->_db->getTable('EditorialBlockInfo');
+        $editorialAccessesTable = $this->_db->getTable('EditorialExhibitAccess');
+        $oldBlockInfos = array();
+        $oldBlockAccesses = array();
+        $newBlockIdMap = array();
+
+        foreach ($blocks as $block) {
+            if ($block->layout == 'editorial-block') {
+                $options = $block->getOptions();
+                if (isset($options['old_id'])) {
+                    $oldId = $options['old_id'];
+                    
+                    // if a block was deleted, this will return null
+                    // because the block hooks/callbacks happen before the page hook
+                    $blockInfo = $editorialBlockInfoTable->findByBlock($oldId);
+                    if ($blockInfo) {
+                        $oldBlockInfos[$oldId] = $blockInfo;
+                        $oldBlockAccesses[$oldId] = $editorialAccessesTable->findBy(array('block_id' => $oldId));
+                        $newBlockIdMap[$oldId] = $block->id;
+                    }
+
+                }
+            }
+        }
+
+        foreach ($oldBlockInfos as $oldId=>$blockInfo) {
+            $blockInfo->block_id = $newBlockIdMap[$oldId];
+            $blockInfo->save();
+        }
+
+        foreach ($oldBlockAccesses as $oldId => $accessRecords) {
+            foreach ($accessRecords as $accessRecord) {
+                $accessRecord->block_id = $newBlockIdMap[$oldId];
+                $accessRecord->save();
+            }
+        }
+        // now that all the ids have been updated, change up permissions as needed
+        foreach ($blocks as $block) {
+            $this->adjustPermissions($block);
+        }
+    }
+    
     public function hookAfterSaveExhibitPageBlock($args)
     {
         $block = $args['record'];
@@ -211,27 +268,11 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $options = $block->getOptions();
 
         if ($insert) {
-debug('inserting');
             $blockInfoRecord = new EditorialBlockInfo();
             $blockInfoRecord->block_id = $block->id;
             $owner = current_user();
             $blockInfoRecord->owner_id = $owner->id;
             $blockInfoRecord->save();
-        } else if (isset($options['old_id'])) {
-debug('updating');
-            $blockInfoRecord = $this->_db->getTable('EditorialBlockInfo')->findByBlock($options['old_id']);
-            $blockInfoRecord->block_id = $block->id;
-            $blockInfoRecord->save();
-
-            $accessRecords = $this->_db->getTable('EditorialExhibitAccess')->findBy(array('block_id' => $options['old_id']));
-            foreach ($accessRecords as $accessRecord) {
-                $accessRecord->block_id = $block->id;
-                $accessRecord->save();
-            }
-        }
-        $this->adjustPermissions($block);
-        if ($options['send_emails']) {
-            $this->sendEmails($block);
         }
     }
 

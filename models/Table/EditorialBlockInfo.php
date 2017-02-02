@@ -14,7 +14,6 @@ class Table_EditorialBlockInfo extends Omeka_Db_Table
         $select->where($this->getTableAlias().'.block_id = ?', $blockId);
         $select->limit(1);
         $select->reset(Zend_Db_Select::ORDER);
-
         return $this->fetchObject($select);
     }
 
