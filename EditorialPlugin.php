@@ -166,8 +166,8 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
 
         $responseTable = $this->_db->getTable('EditorialBlockResponse');
         $options = $block->getOptions();
+debug(print_r($options, true));
         $responseIds = empty($options['response_ids']) ? array() : $options['response_ids'];
-
         if (isset($options['responses'])) {
             foreach ($options['responses'] as $responseData) {
                 if (!empty($responseData)) {
