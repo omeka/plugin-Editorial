@@ -17,9 +17,9 @@
         $('#exhibit-page-form').on('click', '.edit-response,.cancel-response-edit', function(e) {
             e.preventDefault();
             var currentResponse = $(this).parents('.editorial-block-response-container').first();
-            currentResponse.find('.edit-response,.cancel-response-edit').toggle();
-            currentResponse.find('.original-response').toggle();
-            currentResponse.find('.editorial-block-response').toggle();
+            currentResponse.children('.edit-response,.cancel-response-edit').toggle();
+            currentResponse.children('.original-response').toggle();
+            currentResponse.children('.editorial-block-response').toggle();
         });
 
         $('#exhibit-page-form').on('click', '.expand-response,.collapse-response', function(e) {
