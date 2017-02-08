@@ -8,8 +8,9 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             'deactivate',
             'after_save_exhibit_page_block',
             'after_save_exhibit_page',
+            'before_save_exhibit_page',
             'before_save_exhibit_page_block',
-            'after_delete_exhibit_page_block',
+            'before_delete_exhibit_page',
             'admin_head',
             'public_head',
             'define_acl',
@@ -130,32 +131,13 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
                     );
     }
 
-    public function hookAfterDeleteExhibitPageBlock($args)
-    {
-        $block = $args['record'];
-        $options = $block->getOptions();
-        $responseTable = $this->_db->getTable('EditorialBlockResponse');
-        $responses = $responseTable->findResponsesForBlock($block);
-        foreach ($responses as $response) {
-            //sad voodoo for response somehow sometimes being null
-            if ($response) {
-                $response->delete();
-            }
-        }
-
-        $infoRecord = $this->_db->getTable('EditorialBlockInfo')->findByBlock($block);
-        if ($infoRecord) {
-            $infoRecord->delete();
-        }
-    }
-    
     /**
      * Save responses to a block
      * 
      * IDs are stored in the block's options
      * @param unknown_type $args
      */
-    
+
     public function hookBeforeSaveExhibitPageBlock($args)
     {
         $block = $args['record'];
@@ -166,7 +148,6 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
 
         $responseTable = $this->_db->getTable('EditorialBlockResponse');
         $options = $block->getOptions();
-debug(print_r($options, true));
         $responseIds = empty($options['response_ids']) ? array() : $options['response_ids'];
         if (isset($options['responses'])) {
             foreach ($options['responses'] as $responseData) {
@@ -211,12 +192,81 @@ debug(print_r($options, true));
         $block->setOptions($options);
     }
 
+    
+    public function hookBeforeDeleteExhibitPage($args)
+    {
+        $page = $args['record'];
+        $blocks = $page->getPageBlocks();
+        $blockInfoTable = $this->_db->getTable('EditorialBlockInfo');
+        $accessesTable = $this->_db->getTable('EditorialExhibitAccess');
+        $responseTable = $this->_db->getTable('EditorialBlockResponse');
+        // responses are just stored in the options
+        foreach ($blocks as $block) {
+            $options = $block->getOptions();
+            $responses = $responseTable->findResponsesForBlock($block);
+            foreach ($responses as $response) {
+                //sad voodoo for response somehow sometimes being null
+                if ($response) {
+                    $response->delete();
+                }
+            }
+            
+            $info = $blockInfoTable->findByBlock($block);
+            $info->delete();
+            
+            $accesses = $accessesTable->findBy(array('block_id', $block->id));
+            foreach ($accesses as $access) {
+                $access->delete();
+            }
+        }
+    }
+    
+    public function hookBeforeSaveExhibitPage($args)
+    {
+        $page = $args['record'];
+        $post = $args['post'];
+        $postedBlocks = $post['blocks'];
+        $editorialBlockInfoTable = $this->_db->getTable('EditorialBlockInfo');
+        $editorialResponsesTable = $this->_db->getTable('EditorialBlockResponse');
+        $oldPostedIds = array();
+        foreach($postedBlocks as $postedBlock) {
+            if($postedBlock['layout'] == 'editorial-block') {
+                if(isset($postedBlock['options']['old_id'])) {
+                    $oldPostedIds[] = $postedBlock['options']['old_id'];
+                }
+            }
+        }
+
+        $blocks = $page->getPageBlocks();
+        $editorialBlockInfoTable = $this->_db->getTable('EditorialBlockInfo');
+        foreach ($blocks as $block) {
+            $options = $block->getOptions();
+            if (isset($options['old_id'])) {
+                $oldId = $options['old_id'];
+                if (! in_array($oldId, $oldPostedIds)) {
+                    // means block has been deleted
+                    // look up editorial records based on the block, and delete them
+                    $info = $editorialBlockInfoTable->findByBlock($block);
+                    $info->delete();
+                    $responseIds = $options['response_ids'];
+                    $responsesSelect = $editorialResponsesTable->getSelect();
+                    $responsesSelect->where('id IN (?)', $responseIds);
+                    $responses = $editorialResponsesTable->fetchObjects($responsesSelect);
+                    foreach($responses as $response) {
+                        $response->delete();
+                    }
+                }
+            }
+        }
+    }
+    
     public function hookAfterSaveExhibitPage($args)
     {
         $page = $args['record'];
         $blocks = $page->getPageBlocks();
         $editorialBlockInfoTable = $this->_db->getTable('EditorialBlockInfo');
         $editorialAccessesTable = $this->_db->getTable('EditorialExhibitAccess');
+        // responses are just stored in the options
         $oldBlockInfos = array();
         $oldBlockAccesses = array();
         $newBlockIdMap = array();
@@ -256,7 +306,7 @@ debug(print_r($options, true));
             $this->adjustPermissions($block);
         }
     }
-    
+
     public function hookAfterSaveExhibitPageBlock($args)
     {
         $block = $args['record'];
