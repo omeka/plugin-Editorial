@@ -330,7 +330,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
     {
         $layouts['editorial-block'] = array(
                     'name' => __('Editorial Block'),
-                    'description' => __('Provide commentary on pages being worked on'),
+                    'description' => __('Provide commentary on content drafts'),
                 );
 
         return $layouts;
