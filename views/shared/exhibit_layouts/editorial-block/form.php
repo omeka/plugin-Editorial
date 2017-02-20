@@ -143,20 +143,7 @@ if ($block->exists()) {
     <?php if ($block->exists()): ?>
     <input type='hidden' class='old-id' name='<?php echo $formStem; ?>[options][old_id]' value='<?php echo $block->id; ?>' />
     <?php endif; ?>
-    <?php if (! empty($usersForSelect) && $changeAllowed): ?>
-    <div class='users-select'>
-        <?php
-            unset($usersForSelect[$blockOwner->id]);
-            unset($usersForSelect[$currentUser->id]);
-            echo $this->formLabel($formStem.'[options][allowed_users]', __('Grant Access To:'));
-            echo $this->formSelect($formStem.'[options][allowed_users]',
-                                 @$options['allowed_users'],
-                                 array('multiple' => true, 'size' => 10),
-                                 $usersForSelect
-            );
-        ?>
 
-    </div>
     <div class='send-emails'>
         <div>
         <?php
@@ -202,7 +189,20 @@ if ($block->exists()) {
         ?>
         </div>
     </div>
+    <?php if (! empty($usersForSelect) && $changeAllowed): ?>
+    <div class='users-select'>
+        <?php
+            unset($usersForSelect[$blockOwner->id]);
+            unset($usersForSelect[$currentUser->id]);
+            echo $this->formLabel($formStem.'[options][allowed_users]', __('Grant Access To:'));
+            echo $this->formSelect($formStem.'[options][allowed_users]',
+                                 @$options['allowed_users'],
+                                 array('multiple' => true, 'size' => 10),
+                                 $usersForSelect
+            );
+        ?>
 
+    </div>
     <?php else: ?>
         <?php foreach ($options['allowed_users'] as $allowedUserId): ?>
             <input type='hidden' name='<?php echo $formStem; ?>[options][allowed_users][]' value='<?php echo $allowedUserId; ?>' />
