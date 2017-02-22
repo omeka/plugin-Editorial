@@ -324,6 +324,8 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             $blockInfoRecord->owner_id = $owner->id;
             $blockInfoRecord->save();
         }
+
+        $this->sendEmails($block);
     }
 
     public function filterExhibitLayouts($layouts)
