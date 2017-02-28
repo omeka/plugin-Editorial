@@ -324,7 +324,6 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             $blockInfoRecord->owner_id = $owner->id;
             $blockInfoRecord->save();
         }
-
         $this->sendEmails($block);
     }
 
@@ -341,6 +340,14 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
     protected function sendEmails($block)
     {
         $options = $block->getOptions();
+        if (! $options['send_emails']) {
+            return;
+        }
+
+        if (empty($options['email_recipients'])) {
+            return;
+        }
+
         $db = $this->_db;
         $userTable = $db->getTable('User');
         $userSelect = $userTable->getSelect();
