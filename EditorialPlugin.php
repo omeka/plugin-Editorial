@@ -246,14 +246,21 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
                 if (! in_array($oldId, $oldPostedIds)) {
                     // means block has been deleted
                     // look up editorial records based on the block, and delete them
+                    debug($block->id);
+                    debug($oldId);
                     $info = $editorialBlockInfoTable->findByBlock($block);
                     $info->delete();
-                    $responseIds = $options['response_ids'];
-                    $responsesSelect = $editorialResponsesTable->getSelect();
-                    $responsesSelect->where('id IN (?)', $responseIds);
-                    $responses = $editorialResponsesTable->fetchObjects($responsesSelect);
-                    foreach($responses as $response) {
-                        $response->delete();
+                    
+                    // if no responses, it might be empty, so the select fails
+                    if (! empty($responseIds)) {
+                        $responseIds = $options['response_ids'];
+                        $responsesSelect = $editorialResponsesTable->getSelect();
+                        
+                        $responsesSelect->where('id IN (?)', $responseIds);
+                        $responses = $editorialResponsesTable->fetchObjects($responsesSelect);
+                        foreach($responses as $response) {
+                            $response->delete();
+                        }
                     }
                 }
             }
