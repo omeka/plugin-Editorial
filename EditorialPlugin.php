@@ -7,8 +7,9 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             'uninstall',
             'deactivate',
             'after_save_exhibit_page_block',
+            'after_delete_exhibit_page_block', //@todo check if this is needed
             'after_save_exhibit_page',
-            'before_save_exhibit_page',
+            'before_save_exhibit_page', //@todo check if this is needed
             'before_save_exhibit_page_block',
             'before_delete_exhibit_page',
             'admin_head',
@@ -56,6 +57,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             CREATE TABLE IF NOT EXISTS `$db->EditorialBlockInfo` (
               `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
               `block_id` int(10) unsigned NOT NULL,
+              `page_id` int(10) unsigned NOT NULL,
               `owner_id` int(10) unsigned NOT NULL,
               `added` TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00',
               `modified` TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00',
@@ -131,6 +133,37 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
                     );
     }
 
+    /**
+     * Delete the related Editorial info
+     * 
+     * The timing through the sequence of ids and ExhibitBlock and ExhibitPageBlock
+     * deletions is tricky. At this hook, deletions of Blocks happens before
+     * the afterSaveExhibitPage hook happens. That's where id rejiggering happens.
+     * 
+     * @param unknown $args
+     */
+    public function hookAfterDeleteExhibitPageBlock($args)
+    {
+        $block = $args['record'];
+        debug('after delete');
+        debug('block id ' . $block->id);
+        debug('layout ' . $block->layout);
+        if ($block->layout !== 'editorial-block') {
+        //    return;
+        }
+        
+        $options = $block->getOptions();
+
+        $oldId = $option['old_id'];
+        $blockInfoTable = $this->_db->getTable('EditorialBlockInfo');
+        debug('after delete old id ' . $oldId);
+        $blockInfo = $blockInfoTable->findByBlock($block);
+        if ($blockInfo) {
+            $blockInfo->delete();
+        }
+        
+    }
+    
     /**
      * Save responses to a block
      * 
@@ -212,7 +245,11 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             }
             
             $info = $blockInfoTable->findByBlock($block);
-            $info->delete();
+            if ($info) {
+                $info->delete();
+            }
+            
+            
             
             $accesses = $accessesTable->findBy(array('block_id', $block->id));
             foreach ($accesses as $access) {
@@ -240,18 +277,20 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $blocks = $page->getPageBlocks();
         $editorialBlockInfoTable = $this->_db->getTable('EditorialBlockInfo');
         foreach ($blocks as $block) {
+            if ($block->layout != 'editorial-block') {
+                continue;
+            }
             $options = $block->getOptions();
             if (isset($options['old_id'])) {
                 $oldId = $options['old_id'];
                 if (! in_array($oldId, $oldPostedIds)) {
                     // means block has been deleted
                     // look up editorial records based on the block, and delete them
-                    debug($block->id);
-                    debug($oldId);
                     $info = $editorialBlockInfoTable->findByBlock($block);
-                    $info->delete();
-                    
-                    // if no responses, it might be empty, so the select fails
+                    if ($info) {
+                        $info->delete();
+                    }
+                    // if no responses the select fails
                     if (! empty($responseIds)) {
                         $responseIds = $options['response_ids'];
                         $responsesSelect = $editorialResponsesTable->getSelect();
@@ -273,6 +312,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $blocks = $page->getPageBlocks();
         $editorialBlockInfoTable = $this->_db->getTable('EditorialBlockInfo');
         $editorialAccessesTable = $this->_db->getTable('EditorialExhibitAccess');
+        $exhibitPageBlockTable = $this->_db->getTable('ExhibitPageBlock');
         // responses are just stored in the options
         $oldBlockInfos = array();
         $oldBlockAccesses = array();
@@ -283,20 +323,16 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
                 $options = $block->getOptions();
                 if (isset($options['old_id'])) {
                     $oldId = $options['old_id'];
-                    
-                    // if a block was deleted, this will return null
-                    // because the block hooks/callbacks happen before the page hook
                     $blockInfo = $editorialBlockInfoTable->findByBlock($oldId);
                     if ($blockInfo) {
                         $oldBlockInfos[$oldId] = $blockInfo;
                         $oldBlockAccesses[$oldId] = $editorialAccessesTable->findBy(array('block_id' => $oldId));
                         $newBlockIdMap[$oldId] = $block->id;
                     }
-
                 }
             }
         }
-
+        
         foreach ($oldBlockInfos as $oldId=>$blockInfo) {
             $blockInfo->block_id = $newBlockIdMap[$oldId];
             $blockInfo->save();
@@ -311,6 +347,22 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         // now that all the ids have been updated, change up permissions as needed
         foreach ($blocks as $block) {
             $this->adjustPermissions($block);
+        }
+
+        // and clear out block infos for deleted blocks
+
+        debug($page->id);
+        $currentPageBlockInfos = $editorialBlockInfoTable->findBy(array('page_id' => $page->id));
+        foreach ($currentPageBlockInfos as $currentPageBlockInfo) {
+            $extantBlocks = $exhibitPageBlockTable->findBy(
+                array('layout'  => 'editorial-block',
+                      'page_id' => $page->id,
+                      'id'      => $currentPageBlockInfo->block_id
+                )
+            );
+            if (empty($extantBlocks)) {
+                $currentPageBlockInfo->delete();
+            }
         }
     }
 
@@ -327,6 +379,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         if ($insert) {
             $blockInfoRecord = new EditorialBlockInfo();
             $blockInfoRecord->block_id = $block->id;
+            $blockInfoRecord->page_id = $block->page_id;
             $owner = current_user();
             $blockInfoRecord->owner_id = $owner->id;
             $blockInfoRecord->save();

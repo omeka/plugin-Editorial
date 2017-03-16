@@ -14,23 +14,16 @@ if ($block->exists()) {
     $db = get_db();
     $blockInfoTable = $db->getTable('EditorialBlockInfo');
 
-    
-    
     $infoRecord = $blockInfoTable->findByBlock($block);
-
-//debugging
-    if ($infoRecord) {
-    
     $blockOwner = $infoRecord->getOwner();
-    } else {
-        $blockOwner - $currentUser;
-    }
+    
     if ($currentUser->role == 'admin'
         || $currentUser->role == 'super'
         || $currentUser->id == $blockOwner->id
     ) {
         $changeAllowed = true;
     }
+    
 } else {
     $blockOwner = $currentUser;
     $changeAllowed = true;

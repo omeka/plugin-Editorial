@@ -4,6 +4,8 @@ class EditorialBlockInfo extends Omeka_Record_AbstractRecord
 {
     public $block_id;
 
+    public $page_id;
+
     public $owner_id;
 
     public $added;
