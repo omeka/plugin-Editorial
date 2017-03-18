@@ -9,7 +9,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             'after_save_exhibit_page_block',
             'after_delete_exhibit_page_block', //@todo check if this is needed
             'after_save_exhibit_page',
-            'before_save_exhibit_page', //@todo check if this is needed
+            //'before_save_exhibit_page', //@todo check if this is needed
             'before_save_exhibit_page_block',
             'before_delete_exhibit_page',
             'admin_head',
@@ -145,23 +145,23 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
     public function hookAfterDeleteExhibitPageBlock($args)
     {
         $block = $args['record'];
-        debug('after delete');
-        debug('block id ' . $block->id);
-        debug('layout ' . $block->layout);
         if ($block->layout !== 'editorial-block') {
         //    return;
         }
-        
+        $editorialResponsesTable = $this->_db->getTable('EditorialBlockResponse');
         $options = $block->getOptions();
-
-        $oldId = $option['old_id'];
-        $blockInfoTable = $this->_db->getTable('EditorialBlockInfo');
-        debug('after delete old id ' . $oldId);
-        $blockInfo = $blockInfoTable->findByBlock($block);
-        if ($blockInfo) {
-            $blockInfo->delete();
-        }
+        $responseIds = $options['response_ids'];
+        debug($block->layout);
+        debug(print_r($responseIds, true));
         
+        if (! empty($responseIds)) {
+            $responsesSelect = $editorialResponsesTable->getSelect();
+            $responsesSelect->where('id IN (?)', $responseIds);
+            $responses = $editorialResponsesTable->fetchObjects($responsesSelect);
+            foreach($responses as $response) {
+                $response->delete();
+            }
+        }
     }
     
     /**
@@ -263,7 +263,6 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $page = $args['record'];
         $post = $args['post'];
         $postedBlocks = $post['blocks'];
-        $editorialBlockInfoTable = $this->_db->getTable('EditorialBlockInfo');
         $editorialResponsesTable = $this->_db->getTable('EditorialBlockResponse');
         $oldPostedIds = array();
         foreach($postedBlocks as $postedBlock) {
@@ -275,7 +274,6 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         }
 
         $blocks = $page->getPageBlocks();
-        $editorialBlockInfoTable = $this->_db->getTable('EditorialBlockInfo');
         foreach ($blocks as $block) {
             if ($block->layout != 'editorial-block') {
                 continue;
@@ -284,12 +282,10 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             if (isset($options['old_id'])) {
                 $oldId = $options['old_id'];
                 if (! in_array($oldId, $oldPostedIds)) {
-                    // means block has been deleted
-                    // look up editorial records based on the block, and delete them
-                    $info = $editorialBlockInfoTable->findByBlock($block);
-                    if ($info) {
-                        $info->delete();
-                    }
+
+                    
+                    $responseIds = $options['response_ids'];
+                    $responsesSelect = $editorialResponsesTable->getSelect();
                     // if no responses the select fails
                     if (! empty($responseIds)) {
                         $responseIds = $options['response_ids'];
@@ -351,7 +347,6 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
 
         // and clear out block infos for deleted blocks
 
-        debug($page->id);
         $currentPageBlockInfos = $editorialBlockInfoTable->findBy(array('page_id' => $page->id));
         foreach ($currentPageBlockInfos as $currentPageBlockInfo) {
             $extantBlocks = $exhibitPageBlockTable->findBy(
