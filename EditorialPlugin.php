@@ -150,37 +150,6 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
     }
 
     /**
-     * Delete the related Editorial info
-     * 
-     * The timing through the sequence of ids and ExhibitBlock and ExhibitPageBlock
-     * deletions is tricky. At this hook, deletions of Blocks happens before
-     * the afterSaveExhibitPage hook happens. That's where id rejiggering happens.
-     * 
-     * @param unknown $args
-     */
-    public function hookAfterDeleteExhibitPageBlock($args)
-    {
-        $block = $args['record'];
-        if ($block->layout !== 'editorial-block') {
-            return;
-        }
-        $editorialResponsesTable = $this->_db->getTable('EditorialBlockResponse');
-        $options = $block->getOptions();
-        $responseIds = $options['response_ids'];
-        debug($block->layout);
-        debug(print_r($responseIds, true));
-        
-        if (! empty($responseIds)) {
-            $responsesSelect = $editorialResponsesTable->getSelect();
-            $responsesSelect->where('id IN (?)', $responseIds);
-            $responses = $editorialResponsesTable->fetchObjects($responsesSelect);
-            foreach($responses as $response) {
-                $response->delete();
-            }
-        }
-    }
-    
-    /**
      * Save responses to a block
      * 
      * IDs are stored in the block's options
@@ -188,16 +157,6 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
      */
 
     public function hookBeforeSaveExhibitPageBlock($args)
-    
-    /*
-     * go back to before save, so that the response_ids gets set
-     * the block id will still be in flux
-     * so add a remapping afterSaveExhibitPage similar to blockInfos
-     * and save everything again. yay db churn!
-     * Finally, for the reall purpose of deleting responses upon block delete,
-     *   maybe make it and afterDelete on the EditorialBlockInfo?
-     */
-    //public function handleResponses($args)
     {
         $block = $args['record'];
 
@@ -284,49 +243,6 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         }
     }
     
-    public function hookBeforeSaveExhibitPage($args)
-    {
-        $page = $args['record'];
-        $post = $args['post'];
-        $postedBlocks = $post['blocks'];
-        $editorialResponsesTable = $this->_db->getTable('EditorialBlockResponse');
-        $oldPostedIds = array();
-        foreach($postedBlocks as $postedBlock) {
-            if($postedBlock['layout'] == 'editorial-block') {
-                if(isset($postedBlock['options']['old_id'])) {
-                    $oldPostedIds[] = $postedBlock['options']['old_id'];
-                }
-            }
-        }
-
-        $blocks = $page->getPageBlocks();
-        foreach ($blocks as $block) {
-            if ($block->layout != 'editorial-block') {
-                continue;
-            }
-            $options = $block->getOptions();
-            if (isset($options['old_id'])) {
-                $oldId = $options['old_id'];
-                if (! in_array($oldId, $oldPostedIds)) {
-
-                    
-                    $responseIds = $options['response_ids'];
-                    $responsesSelect = $editorialResponsesTable->getSelect();
-                    // if no responses the select fails
-                    if (! empty($responseIds)) {
-                        $responseIds = $options['response_ids'];
-                        $responsesSelect = $editorialResponsesTable->getSelect();
-                        
-                        $responsesSelect->where('id IN (?)', $responseIds);
-                        $responses = $editorialResponsesTable->fetchObjects($responsesSelect);
-                        foreach($responses as $response) {
-                            $response->delete();
-                        }
-                    }
-                }
-            }
-        }
-    }
     
     public function hookAfterSaveExhibitPage($args)
     {
