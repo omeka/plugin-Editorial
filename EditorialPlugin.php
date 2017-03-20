@@ -163,6 +163,12 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         if ($block->layout !== 'editorial-block') {
             return;
         }
+        
+        if ($block->text == '') {
+            $block->addError(__('Editorial Block Text'), __('Text cannot be empty'));
+            return;
+        }
+        
         $responseTable = $this->_db->getTable('EditorialBlockResponse');
         $options = $block->getOptions();
         $responseIds = empty($options['response_ids']) ? array() : $options['response_ids'];
