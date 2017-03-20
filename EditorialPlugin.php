@@ -15,6 +15,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             'admin_head',
             'public_head',
             'define_acl',
+            'upgrade'
             );
 
     protected $_filters = array(
@@ -110,6 +111,20 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
 
         $sql = "DROP TABLE IF EXISTS `$db->EditorialExhibitAccess`";
         $db->query($sql);
+    }
+    
+    public function hookUpgrade($args)
+    {
+        $oldVersion = $args['old_version'];
+        $newVersion = $args['new_version'];
+        $db = $this->_db;
+        
+        if (version_compare($olVersion, '1.0.1', '<')) {
+            $sql = "ALTER TABLE `$db->EditorialBlockInfo` ADD `block_id` INT UNSIGNED NULL;";
+            $db->query($sql);
+            $sql = "ALTER TABLE `$db->EditorialBlockResponse` ADD `block_id` INT UNSIGNED NULL;";
+            $db->query($sql);
+        }
     }
 
     public function hookPublicHead()
