@@ -7,9 +7,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             'uninstall',
             'deactivate',
             'after_save_exhibit_page_block',
-            //'after_delete_exhibit_page_block', //@todo check if this is needed
             'after_save_exhibit_page',
-            //'before_save_exhibit_page', //@todo check if this is needed
             'before_save_exhibit_page_block', //@todo possibly moved to handleResponses
             'before_delete_exhibit_page',
             'admin_head',
