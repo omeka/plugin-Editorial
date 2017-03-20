@@ -6,6 +6,8 @@ class EditorialBlockResponse extends Omeka_Record_AbstractRecord
 
     public $parent_id;
 
+    public $block_id;
+
     public $owner_id;
 
     public $added;

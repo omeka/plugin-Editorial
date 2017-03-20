@@ -7,10 +7,10 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             'uninstall',
             'deactivate',
             'after_save_exhibit_page_block',
-            'after_delete_exhibit_page_block', //@todo check if this is needed
+            //'after_delete_exhibit_page_block', //@todo check if this is needed
             'after_save_exhibit_page',
             //'before_save_exhibit_page', //@todo check if this is needed
-            'before_save_exhibit_page_block',
+            'before_save_exhibit_page_block', //@todo possibly moved to handleResponses
             'before_delete_exhibit_page',
             'admin_head',
             'public_head',
@@ -41,6 +41,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
               `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
               `text` text COLLATE utf8_unicode_ci NOT NULL,
               `parent_id` int(10) unsigned NULL,
+              `block_id` int(10) unsigned NOT NULL,
               `owner_id` int(10) unsigned NOT NULL,
               `added` TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00',
               `modified` TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00',
@@ -146,7 +147,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
     {
         $block = $args['record'];
         if ($block->layout !== 'editorial-block') {
-        //    return;
+            return;
         }
         $editorialResponsesTable = $this->_db->getTable('EditorialBlockResponse');
         $options = $block->getOptions();
@@ -172,13 +173,22 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
      */
 
     public function hookBeforeSaveExhibitPageBlock($args)
+    
+    /*
+     * go back to before save, so that the response_ids gets set
+     * the block id will still be in flux
+     * so add a remapping afterSaveExhibitPage similar to blockInfos
+     * and save everything again. yay db churn!
+     * Finally, for the reall purpose of deleting responses upon block delete,
+     *   maybe make it and afterDelete on the EditorialBlockInfo?
+     */
+    //public function handleResponses($args)
     {
         $block = $args['record'];
 
         if ($block->layout !== 'editorial-block') {
             return;
         }
-
         $responseTable = $this->_db->getTable('EditorialBlockResponse');
         $options = $block->getOptions();
         $responseIds = empty($options['response_ids']) ? array() : $options['response_ids'];
@@ -236,6 +246,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         // responses are just stored in the options
         foreach ($blocks as $block) {
             $options = $block->getOptions();
+            // @todo: this can probably switch to the default findBy, now that there's a block id
             $responses = $responseTable->findResponsesForBlock($block);
             foreach ($responses as $response) {
                 //sad voodoo for response somehow sometimes being null
@@ -308,6 +319,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $blocks = $page->getPageBlocks();
         $editorialBlockInfoTable = $this->_db->getTable('EditorialBlockInfo');
         $editorialAccessesTable = $this->_db->getTable('EditorialExhibitAccess');
+        $editorialResponsesTable = $this->_db->getTable('EditorialBlockResponse');
         $exhibitPageBlockTable = $this->_db->getTable('ExhibitPageBlock');
         // responses are just stored in the options
         $oldBlockInfos = array();
@@ -323,6 +335,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
                     if ($blockInfo) {
                         $oldBlockInfos[$oldId] = $blockInfo;
                         $oldBlockAccesses[$oldId] = $editorialAccessesTable->findBy(array('block_id' => $oldId));
+                        $oldBlockResponses[$oldId] = $editorialResponsesTable->findBy(array('block_id' => $oldId));
                         $newBlockIdMap[$oldId] = $block->id;
                     }
                 }
@@ -340,9 +353,13 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
                 $accessRecord->save();
             }
         }
+            
+        
         // now that all the ids have been updated, change up permissions as needed
         foreach ($blocks as $block) {
             $this->adjustPermissions($block);
+            $this->adjustResponseBlockIds($block);
+            
         }
 
         // and clear out block infos for deleted blocks
@@ -357,6 +374,11 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             );
             if (empty($extantBlocks)) {
                 $currentPageBlockInfo->delete();
+                // and delete the responses
+                $responsesToDelete = $editorialResponsesTable->findBy(array('block_id' => $currentPageBlockInfo->block_id));
+                foreach($responsesToDelete as $responseToDelete) {
+                    $responseToDelete->delete();
+                }
             }
         }
     }
@@ -432,6 +454,27 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             $mail->send();
         } catch (Exception $e) {
             _log($e);
+        }
+    }
+    
+    protected function adjustResponseBlockIds($block)
+    {
+        $options = $block->getOptions();
+        if (! empty($options['response_ids'])) {
+            $responseIds = $options['response_ids'];
+            $editorialBlockResponseTable = $this->_db->getTable('EditorialBlockResponse');
+            $select = $editorialBlockResponseTable->getSelect();
+            $select->where('id IN (?)', $responseIds);
+            $responses = $editorialBlockResponseTable->fetchObjects($select);
+            foreach($responses as $response) {
+                $response->block_id = $block->id;
+                $childResponses = $response->getChildResponses();
+                foreach($childResponses as $childResponse) {
+                    $childResponse->block_id = $block->id;
+                    $childResponse->save();
+                }
+                $response->save();
+            }
         }
     }
 
