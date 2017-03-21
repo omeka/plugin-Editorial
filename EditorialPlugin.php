@@ -40,7 +40,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
               `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
               `text` text COLLATE utf8_unicode_ci NOT NULL,
               `parent_id` int(10) unsigned NULL,
-              `block_id` int(10) unsigned NOT NULL,
+              `block_id` int(10) unsigned NULL,
               `owner_id` int(10) unsigned NOT NULL,
               `added` TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00',
               `modified` TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00',
@@ -56,7 +56,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $sql = "
             CREATE TABLE IF NOT EXISTS `$db->EditorialBlockInfo` (
               `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-              `block_id` int(10) unsigned NOT NULL,
+              `block_id` int(10) unsigned NULL,
               `page_id` int(10) unsigned NOT NULL,
               `owner_id` int(10) unsigned NOT NULL,
               `added` TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00',
