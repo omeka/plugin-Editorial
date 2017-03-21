@@ -117,7 +117,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $newVersion = $args['new_version'];
         $db = $this->_db;
         
-        if (version_compare($olVersion, '1.0.1', '<')) {
+        if (version_compare($oldVersion, '1.0.1', '<')) {
             $sql = "ALTER TABLE `$db->EditorialBlockInfo` ADD `block_id` INT UNSIGNED NULL;";
             $db->query($sql);
             $sql = "ALTER TABLE `$db->EditorialBlockResponse` ADD `block_id` INT UNSIGNED NULL;";
