@@ -118,9 +118,9 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         $db = $this->_db;
         
         if (version_compare($oldVersion, '1.0.1', '<')) {
-            $sql = "ALTER TABLE `$db->EditorialBlockInfo` ADD `block_id` INT UNSIGNED NULL;";
+            $sql = "ALTER TABLE `$db->EditorialBlockInfo` CHANGE `block_id` `block_id` INT(11) UNSIGNED NULL;";
             $db->query($sql);
-            $sql = "ALTER TABLE `$db->EditorialBlockResponse` ADD `block_id` INT UNSIGNED NULL;";
+            $sql = "ALTER TABLE `$db->EditorialBlockResponse` ADD `block_id` INT(11) UNSIGNED NULL;";
             $db->query($sql);
         }
     }
