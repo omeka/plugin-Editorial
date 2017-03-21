@@ -8,7 +8,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             'deactivate',
             'after_save_exhibit_page_block',
             'after_save_exhibit_page',
-            'before_save_exhibit_page_block', //@todo possibly moved to handleResponses
+            'before_save_exhibit_page_block',
             'before_delete_exhibit_page',
             'admin_head',
             'public_head',
