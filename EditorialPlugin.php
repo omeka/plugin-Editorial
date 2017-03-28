@@ -335,8 +335,16 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             $owner = current_user();
             $blockInfoRecord->owner_id = $owner->id;
             $blockInfoRecord->save();
+            
+            // insert seems to fire this hook twice, so 
+            // send the emails then unset sending emails
+            $this->sendEmails($block);
+            $options = $block->getOptions();
+            $options['send_emails'] = false;
+            $block->setOptions($options);
+        } else {
+            $this->sendEmails($block);
         }
-        $this->sendEmails($block);
     }
 
     public function filterExhibitLayouts($layouts)
