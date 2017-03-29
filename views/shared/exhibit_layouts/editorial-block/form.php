@@ -150,13 +150,14 @@ if ($block->exists()) {
     <?php if (! empty($usersForSelect) && $changeAllowed): ?>
     <div class='users-select'>
         <?php
-            unset($usersForSelect[$blockOwner->id]);
-            unset($usersForSelect[$currentUser->id]);
+            $usersForAccessSelect = $usersForSelect;
+            unset($usersForAccessSelect[$blockOwner->id]);
+            unset($usersForAccessSelect[$currentUser->id]);
             echo $this->formLabel($formStem.'[options][allowed_users]', __('Grant Access To:'));
             echo $this->formSelect($formStem.'[options][allowed_users]',
                                  @$options['allowed_users'],
                                  array('multiple' => true, 'size' => 10),
-                                 $usersForSelect
+                                 $usersForAccessSelect
             );
         ?>
 
@@ -188,9 +189,11 @@ if ($block->exists()) {
 
             if (isset($options['allowed_users'])) {
                 foreach ($usersForSelect as $userId => $name) {
+                    debug($userId);
                     if (in_array($userId, $options['allowed_users'])) {
                         if ($userId == $currentUser->id) {
-                            $recipientsArray[$userId] = $name.' '.__('(You)');
+                            debug($userId);
+                            $recipientsArray[$userId] = $name. ' ' . __('(You)');
                         } else {
                             $recipientsArray[$userId] = $name;
                         }
