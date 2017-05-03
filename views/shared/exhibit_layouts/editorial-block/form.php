@@ -189,10 +189,8 @@ if ($block->exists()) {
 
             if (isset($options['allowed_users'])) {
                 foreach ($usersForSelect as $userId => $name) {
-                    debug($userId);
                     if (in_array($userId, $options['allowed_users'])) {
                         if ($userId == $currentUser->id) {
-                            debug($userId);
                             $recipientsArray[$userId] = $name. ' ' . __('(You)');
                         } else {
                             $recipientsArray[$userId] = $name;

@@ -367,7 +367,6 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         if (empty($options['email_recipients'])) {
             return;
         }
-debug("sendEmails on block id: " . $block->id );
         $db = $this->_db;
         $userTable = $db->getTable('User');
         $userSelect = $userTable->getSelect();
