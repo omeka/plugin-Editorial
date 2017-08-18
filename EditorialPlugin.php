@@ -431,7 +431,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             $users = array();
         } else {
             $userSelect = $userTable->getSelect();
-            $userSelect->where('id IN (?)', $options['allowed_users']);
+            $userSelect->where('users.id IN (?)', $options['allowed_users']);
             $users = $userTable->fetchObjects($userSelect);
         }
         foreach ($users as $user) {
