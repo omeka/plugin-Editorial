@@ -18,7 +18,7 @@ class EditorialExhibitAccessAclAssertion implements Zend_Acl_Assert_Interface
             return true;
         }
 
-        if (get_class($role) == 'User' && get_class($resource) == 'Exhibit') {
+        if (($role instanceof User) && get_class($resource) == 'Exhibit') {
             if ($privilege == 'edit') {
                 $db = get_db();
                 $accessTable = $db->getTable('EditorialExhibitAccess');
