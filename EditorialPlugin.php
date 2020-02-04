@@ -5,7 +5,6 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
     protected $_hooks = array(
             'install',
             'uninstall',
-            'deactivate',
             'after_save_exhibit_page_block',
             'after_save_exhibit_page',
             'before_save_exhibit_page_block',
@@ -19,18 +18,6 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
     protected $_filters = array(
                 'exhibit_layouts',
             );
-
-    public function hookDeactivate()
-    {
-        $db = $this->_db;
-        $exhibitContributors = $db->getTable('User')->findBy(array('role' => 'exhibit-contributor'));
-
-        // assumes that original role was Contributor
-        foreach ($exhibitContributors as $user) {
-            $user->role = 'contributor';
-            $user->save();
-        }
-    }
 
     public function hookInstall()
     {
@@ -82,23 +69,9 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
     {
         $db = $this->_db;
 
-        // delete these first so the callback don't look for deleted tables
         $editorialBlocks = $db->getTable('ExhibitPageBlock')->findBy(array('layout' => 'editorial-block'));
         foreach ($editorialBlocks as $block) {
             $block->delete();
-        }
-
-        $exhibitContributors = $db->getTable('User')->findBy(array('role' => 'exhibit-contributor'));
-
-        // assumes that original role was Contributor
-        foreach ($exhibitContributors as $user) {
-            $user->role = 'contributor';
-            $user->save();
-        }
-
-        $editorialBlocks = $db->getTable('ExhibitPageBlock')->findBy(array('layout' => 'editorial-block'));
-        foreach ($editorialBlocks as $editorialBlock) {
-            $editorialBlock->delete();
         }
 
         $sql = "DROP TABLE IF EXISTS `$db->EditorialBlockInfo`";
@@ -123,6 +96,14 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             $sql = "ALTER TABLE `$db->EditorialBlockResponse` ADD `block_id` INT UNSIGNED NULL;";
             $db->query($sql);
         }
+
+        if (version_compare($oldVersion, '1.1.0', '<')) {
+            $exhibitContributors = $db->getTable('User')->findBy(array('role' => 'exhibit-contributor'));
+            foreach ($exhibitContributors as $user) {
+                $user->role = 'contributor';
+                $user->save();
+            }
+        }
     }
 
     public function hookPublicHead()
@@ -139,12 +120,9 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
     public function hookDefineAcl($args)
     {
         $acl = $args['acl'];
-        $acl->addRole('exhibit-contributor', 'contributor');
-        $acl->allow('exhibit-contributor',
-                    'ExhibitBuilder_Exhibits',
-                    array('edit', 'showNotPublic'),
-                    new EditorialExhibitAccessAclAssertion()
-                    );
+        $acl->allow('contributor', 'ExhibitBuilder_Exhibits', 'showNotPublic');
+        $acl->allow('contributor', 'ExhibitBuilder_Exhibits', 'edit',
+            new EditorialExhibitAccessAclAssertion);
     }
 
     /**
@@ -435,13 +413,6 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             $users = $userTable->fetchObjects($userSelect);
         }
         foreach ($users as $user) {
-            // don't demote supers or admins
-            // also basically assumes that Contributors are the
-            // ones being promoted
-            if ($user->role != 'super' && $user->role != 'admin') {
-                $user->role = 'exhibit-contributor';
-                $user->save();
-            }
             $accessRecords = $accessTable->findBy(array('user_id' => $user->id,
                                                         'exhibit_id' => $exhibit->id, ));
             if (empty($accessRecords)) {

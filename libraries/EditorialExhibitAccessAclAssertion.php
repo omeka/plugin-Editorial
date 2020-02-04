@@ -8,27 +8,16 @@ class EditorialExhibitAccessAclAssertion implements Zend_Acl_Assert_Interface
         Zend_Acl_Resource_Interface $resource = null,
         $privilege = null)
     {
+        if ($role instanceof User && $resource instanceof Exhibit) {
+            $db = get_db();
+            $accessTable = $db->getTable('EditorialExhibitAccess');
+            $accessRecords = $accessTable->findBy(array(
+                'user_id' => $role->id,
+                'exhibit_id' => $resource->id,
+            ));
 
-        // it looks like without this always being true,
-        // the second check doesn't get made
-        // for this privilege, the exhibit object isn't passed in
-        // so I can't check on that
-        // whomp whomp
-        if ($privilege == 'showNotPublic') {
-            return true;
+            return !empty($accessRecords);
         }
-
-        if (($role instanceof User) && get_class($resource) == 'Exhibit') {
-            if ($privilege == 'edit') {
-                $db = get_db();
-                $accessTable = $db->getTable('EditorialExhibitAccess');
-                $accessRecords = $accessTable->findBy(array('user_id' => $role->id,
-                                                            'exhibit_id' => $resource->id, ));
-
-                return !empty($accessRecords);
-            }
-        }
-
         return false;
     }
 }
