@@ -3,21 +3,21 @@
 class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
 {
     protected $_hooks = array(
-            'install',
-            'uninstall',
-            'after_save_exhibit_page_block',
-            'after_save_exhibit_page',
-            'before_save_exhibit_page_block',
-            'before_delete_exhibit_page',
-            'admin_head',
-            'public_head',
-            'define_acl',
-            'upgrade'
-            );
+        'install',
+        'uninstall',
+        'after_save_exhibit_page_block',
+        'after_save_exhibit_page',
+        'before_save_exhibit_page_block',
+        'before_delete_exhibit_page',
+        'admin_head',
+        'public_head',
+        'define_acl',
+        'upgrade',
+    );
 
     protected $_filters = array(
-                'exhibit_layouts',
-            );
+        'exhibit_layouts',
+    );
 
     public function hookInstall()
     {
@@ -87,7 +87,6 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
     public function hookUpgrade($args)
     {
         $oldVersion = $args['old_version'];
-        $newVersion = $args['new_version'];
         $db = $this->_db;
         
         if (version_compare($oldVersion, '1.0.1', '<')) {
@@ -111,6 +110,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
         queue_css_file('editorial');
         queue_js_file('editorial');
     }
+
     public function hookAdminHead()
     {
         queue_css_file('editorial');
@@ -129,9 +129,8 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
      * Save responses to a block
      * 
      * IDs are stored in the block's options
-     * @param unknown_type $args
+     * @param array $args
      */
-
     public function hookBeforeSaveExhibitPageBlock($args)
     {
         $block = $args['record'];
@@ -216,8 +215,6 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
                 $info->delete();
             }
             
-            
-            
             $accesses = $accessesTable->findBy(array('block_id', $block->id));
             foreach ($accesses as $access) {
                 $access->delete();
@@ -279,12 +276,11 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
 
         $currentPageBlockInfos = $editorialBlockInfoTable->findBy(array('page_id' => $page->id));
         foreach ($currentPageBlockInfos as $currentPageBlockInfo) {
-            $extantBlocks = $exhibitPageBlockTable->findBy(
-                array('layout'  => 'editorial-block',
-                      'page_id' => $page->id,
-                      'id'      => $currentPageBlockInfo->block_id
-                )
-            );
+            $extantBlocks = $exhibitPageBlockTable->findBy(array(
+                'layout'  => 'editorial-block',
+                'page_id' => $page->id,
+                'id'      => $currentPageBlockInfo->block_id
+            ));
             if (empty($extantBlocks)) {
                 $currentPageBlockInfo->delete();
                 // and delete the responses
@@ -328,9 +324,9 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
     public function filterExhibitLayouts($layouts)
     {
         $layouts['editorial-block'] = array(
-                    'name' => __('Editorial Block'),
-                    'description' => __('Provide commentary on content drafts'),
-                );
+            'name' => __('Editorial Block'),
+            'description' => __('Provide commentary on content drafts'),
+        );
 
         return $layouts;
     }
@@ -413,8 +409,10 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             $users = $userTable->fetchObjects($userSelect);
         }
         foreach ($users as $user) {
-            $accessRecords = $accessTable->findBy(array('user_id' => $user->id,
-                                                        'exhibit_id' => $exhibit->id, ));
+            $accessRecords = $accessTable->findBy(array(
+                'user_id' => $user->id,
+                'exhibit_id' => $exhibit->id,
+            ));
             if (empty($accessRecords)) {
                 $accessRecord = new EditorialExhibitAccess();
                 $accessRecord->user_id = $user->id;
@@ -472,11 +470,7 @@ class EditorialPlugin extends Omeka_Plugin_AbstractPlugin
             break;
 
             case 'EditorialBlockResponse':
-                if ($record->owner_id == $user->id) {
-                    return true;
-                }
-
-                return false;
+                return $record->owner_id == $user->id;
             break;
 
             default:
