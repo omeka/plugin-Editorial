@@ -1,8 +1,15 @@
 <?php
+$db = get_db();
 $formStem = $block->getFormStem();
 $options = $block->getOptions();
-$usersForSelect = get_table_options('User');
-unset($usersForSelect['']);
+$allowedRoles = array('super', 'admin', 'contributor');
+
+$userSelect = $db->getTable('User')->getSelectForFindBy();
+$userSelect->reset(Zend_Db_Select::COLUMNS);
+$userSelect->from(array(), array('users.id', 'users.name'));
+$userSelect->where("role IN ('super', 'admin', 'contributor')");
+$usersForSelect = $db->fetchPairs($userSelect);
+
 $currentUser = current_user();
 
 
@@ -11,7 +18,6 @@ $currentUser = current_user();
 $changeAllowed = false;
 
 if ($block->exists()) {
-    $db = get_db();
     $blockInfoTable = $db->getTable('EditorialBlockInfo');
 
     $infoRecord = $blockInfoTable->findByBlock($block);
