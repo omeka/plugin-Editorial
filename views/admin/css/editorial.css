@@ -84,11 +84,11 @@
     float: right;
 }
 
-.editorial.layout-options select,
-.editorial.layout-options .mceEditor {
-    margin-top: 5px;
-    width: 100%;
-    display: block;
+.editorial.layout-options select {
+width: calc(70% - 20px);
+}
+.editorial.layout-options .mce-tinymce {
+    width: calc(70% - 22px) !important;
 }
 
 .send-emails > div:not(:last-child) {

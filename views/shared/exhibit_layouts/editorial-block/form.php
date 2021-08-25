@@ -146,7 +146,7 @@ if ($block->exists()) {
 <div class='editorial layout-options'>
     <div class="block-header">
         <h4><?php echo __('Options'); ?></h4>
-        <div class="drawer"></div>
+        <div class="drawer-toggle"></div>
     </div>
 
     <?php if ($block->exists()): ?>
@@ -162,7 +162,7 @@ if ($block->exists()) {
             echo $this->formLabel($formStem.'[options][allowed_users]', __('Grant Access To:'));
             echo $this->formSelect($formStem.'[options][allowed_users]',
                                  @$options['allowed_users'],
-                                 array('multiple' => true, 'size' => 10),
+                                 array('multiple' => true),
                                  $usersForAccessSelect
             );
         ?>
@@ -175,7 +175,6 @@ if ($block->exists()) {
     <?php endif; ?>
 
     <div class='send-emails'>
-        <div>
         <?php
             echo $this->formLabel($formStem.'[options][send_emails]', __('Send Email Notifications?'));
             echo $this->formCheckbox($formStem.'[options][send_emails]',
@@ -183,41 +182,40 @@ if ($block->exists()) {
                                      array('class' => 'email-checkbox')
                     );
             ?>
-        </div>
-        <div>
-        <?php
-            $recipientsArray = array();
-            if ($blockOwner->id == $currentUser->id) {
-                $recipientsArray[$blockOwner->id] = $blockOwner->name.' '.__('(Original Commenter)').' '.__('(You)');
-            } else {
-                $recipientsArray[$blockOwner->id] = $blockOwner->name.' '.__('(Original Commenter)');
-            }
+    </div>
+    <div class="select-recipients">
+    <?php
+        $recipientsArray = array();
+        if ($blockOwner->id == $currentUser->id) {
+            $recipientsArray[$blockOwner->id] = $blockOwner->name.' '.__('(Original Commenter)').' '.__('(You)');
+        } else {
+            $recipientsArray[$blockOwner->id] = $blockOwner->name.' '.__('(Original Commenter)');
+        }
 
-            if (isset($options['allowed_users'])) {
-                foreach ($usersForSelect as $userId => $name) {
-                    if (in_array($userId, $options['allowed_users'])) {
-                        if ($userId == $currentUser->id) {
-                            $recipientsArray[$userId] = $name. ' ' . __('(You)');
-                        } else {
-                            $recipientsArray[$userId] = $name;
-                        }
+        if (isset($options['allowed_users'])) {
+            foreach ($usersForSelect as $userId => $name) {
+                if (in_array($userId, $options['allowed_users'])) {
+                    if ($userId == $currentUser->id) {
+                        $recipientsArray[$userId] = $name. ' ' . __('(You)');
+                    } else {
+                        $recipientsArray[$userId] = $name;
                     }
                 }
             }
-            echo $this->formLabel($formStem.'[options][email_recipients]', __('Select Recipients'));
-            echo $this->formSelect($formStem.'[options][email_recipients]',
-                                 array(),
-                                 array('class' => 'email-select',  'multiple' => true, 'size' => count($recipientsArray)),
-                                 $recipientsArray
-            );
-            ?>
-        </div>
-        <div>
-        <?php
-            echo $this->formLabel($formStem.'[options][email_text]', __('Additional Email Text (Optional)'));
-            echo $this->formTextarea($formStem.'[options][email_text]');
+        }
+        echo $this->formLabel($formStem.'[options][email_recipients]', __('Select Recipients'));
+        echo $this->formSelect($formStem.'[options][email_recipients]',
+                                array(),
+                                array('class' => 'email-select',  'multiple' => true, 'size' => count($recipientsArray)),
+                                $recipientsArray
+        );
         ?>
-        </div>
+    </div>
+    <div>
+    <?php
+        echo $this->formLabel($formStem.'[options][email_text]', __('Additional Email Text (Optional)'));
+        echo $this->formTextarea($formStem.'[options][email_text]');
+    ?>
     </div>
 
 </div>
