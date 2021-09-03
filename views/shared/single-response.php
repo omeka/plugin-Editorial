@@ -6,7 +6,7 @@
     <img class='gravatar' src='<?php echo $url; ?>' />
     <span class="username"><?php echo $owner->username; ?></span>
     <?php if (isset($infoRecord)): ?>
-    <span><?php echo metadata($infoRecord, 'added'); ?></span>
+    <span class="timestamp"><?php echo metadata($infoRecord, 'added'); ?></span>
     <?php endif; ?>
     <?php if (isset($response)): ?>
     <span><?php echo metadata($response, 'added'); ?></span>

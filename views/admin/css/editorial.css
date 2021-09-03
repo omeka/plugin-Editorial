@@ -1,3 +1,6 @@
+.editorial.block-text .mce-tinymce {
+    margin-top: 10px;
+}
 
 .editorial-block-response-container {
     clear: both;
@@ -13,12 +16,6 @@
 .edit-response,
 .cancel-response-edit {
     float: right;
-}
-
-.original-label,
-.original .edit-response,
-.original .cancel-response-edit {
-    color: #d7daa0;
 }
 
 .original-label:before {
@@ -41,14 +38,13 @@
 }
 
 .editorial-block-response-info {
-    background-color: #D6D5C2;
-    padding: 5px;
-    line-height: 30px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
-.original .editorial-block-response-info {
-    background-color: #7C7E5D;
-    color: #fff;
+.editorial-block-response-info .timestamp {
+    margin: 0 auto 0 1rem;
 }
 
 .editorial-block-response-info img {
@@ -118,7 +114,6 @@ a.expand-response:visited {
 .preview .response-text:after {
     content: "";
     height: 3em;
-    background-image: linear-gradient(rgba(0,0,0,0), #fbfbf9 100%);
     position: absolute;
     left: 0;
     right: 0;
@@ -134,7 +129,6 @@ a.expand-response:visited {
     top: 13.5em;
     left: 0;
     right: 0;
-    background-color: #fbfbf9;
     line-height: 1.5em;
     height: 1.5em;
     padding-top: .25em;
