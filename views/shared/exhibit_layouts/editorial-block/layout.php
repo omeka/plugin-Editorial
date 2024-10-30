@@ -7,7 +7,7 @@
 <div class='editorial-block public'>
     <div>
         <h3><?php echo __('Internal Comments'); ?></h3>
-        <div class="drawer opened" role="button" title="<?php echo __('Expand/Collapse'); ?>"></div>
+        <button class="drawer opened" type="button" title="<?php echo __('Expand/Collapse'); ?>"></button>
     </div>
     <div class='editorial-block-responses' style="display: block">
         <div class='editorial-block editorial-comment original'>

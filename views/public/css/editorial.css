@@ -33,27 +33,30 @@
     margin-top: 0;
 }
 
-.editoria;-block .response-text > *:last-child {
+.editorial-block .response-text > *:last-child {
     margin-bottom: 0;
 }
 
-.editorial-block .drawer {
+.editorial-block button.drawer {
     position: absolute;
     top: 0;
     right: 0;
-    width: 100%;
     text-align: right;
+    background: transparent;
+    border: 0;
+    color: #000;
 }
 
 .editorial-block .drawer::after {
     content: "\f0da";
     display: inline-block;
-    font-family: "FontAwesome";
+    font-family: "Font Awesome 5 Free", sans-serif;
+    font-weight: 900;
     font-size: 16px;
     height: 1.5em;
     width: 1.5em;
     text-indent: 0;
-    text-align: center;
+    text-align: center;;
 }
 
 .editorial-block .drawer.opened::after {
