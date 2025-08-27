@@ -83,7 +83,7 @@
 .editorial.layout-options select {
 width: calc(70% - 20px);
 }
-.editorial.layout-options .mce-tinymce {
+.editorial.layout-options .tox-tinymce {
     width: calc(70% - 22px) !important;
 }
 
