@@ -146,7 +146,7 @@ if ($block->exists()) {
 <div class='editorial layout-options'>
     <div class="block-header drawer">
         <h4><?php echo __('Options'); ?></h4>
-        <button class="drawer-toggle" type="button" data-action-selector="opened" aria-expanded="true" aria-controls="<?php echo $formStem; ?>-layout-options" aria-label="<?php echo __('Show options'); ?>" title="<?php echo __('Show options'); ?>"><span class="icon"></span></button>
+        <button class="drawer-toggle" type="button" data-action-selector="opened" aria-expanded="false" aria-controls="<?php echo $formStem; ?>-layout-options" aria-label="<?php echo __('Show options'); ?>" title="<?php echo __('Show options'); ?>"><span class="icon"></span></button>
     </div>
 
     <div class="drawer-contents" id="<?php echo $formStem; ?>-layout-options">
